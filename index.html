@@ -40,6 +40,15 @@
     padding:32px 22px 80px;
   }
   .wrap{max-width:760px;margin:0 auto;}
+  .cheat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;}
+  .cheat-player{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0;}
+  .cheat-photo{width:76px;height:76px;flex:0 0 76px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:var(--card-2);font-weight:600;}
+  .cheat-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+  .cheat-name{font-size:17px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}
+  .cheat-number{color:var(--orange-dim);}
+  .cheat-detail{color:var(--text-dim);font-size:14px;line-height:1.5;margin-top:3px;}
+  .cheat-depth{font-family:'Oswald',sans-serif;font-size:28px;margin:28px 0 10px;}
+  .cheat-unit{font-size:16px;color:var(--text-dim);margin:18px 0 10px;}
   .settings-group{border:1px solid var(--line);border-radius:12px;margin:22px 0;padding:16px;min-width:0;}
   .settings-group legend{font-weight:600;color:var(--orange-dim);padding:0 6px;}
   .settings-group label{display:flex;align-items:center;gap:12px;min-height:44px;line-height:1.4;}
@@ -192,6 +201,7 @@
   <p class="sub">Learn mode · name, number, exact position and depth string</p>
 
   <div id="setupScreen" class="setup-card">
+    <button class="btn-ghost" id="openCheatSheet" style="margin:0 0 22px;">Depth chart cheat sheet</button>
     <p>Choose your players, question types, and answer formats. Complete every enabled question and format for each player to master them. Missed questions return for another try.</p>
     <p style="margin-bottom:14px;">Player headshots are loaded from the official Chicago Bears roster page. Positions and depth strings use ESPN's Bears depth chart (Starter, 2nd, 3rd, 4th). If a photo can't load, the colored initials badge appears as a fallback.</p>
     <p style="margin-bottom:14px;">Choose which units to include:</p>
@@ -271,6 +281,13 @@
     </div>
   </div>
 
+  <div id="cheatScreen" class="hidden">
+    <button class="btn-ghost" id="closeCheatSheet">← Back to quiz settings</button>
+    <h2 class="cheat-depth" id="cheatHeading" tabindex="-1">Depth chart cheat sheet</h2>
+    <p class="sub">Full roster from this quiz, grouped by primary depth and unit. Includes reserve / injured players.</p>
+    <div id="cheatContent"></div>
+    <button class="btn-ghost" id="closeCheatSheetBottom">← Back to quiz settings</button>
+  </div>
   <div id="quizScreen" class="hidden">
     <div class="topbar">
       <span class="stat">Mastered <b id="masteredCount">0</b>/<span id="totalCount">0</span></span>
@@ -475,6 +492,96 @@ let advanceTimer;
 const selectedValues = name => [...document.querySelectorAll('input[name="' + name + '"]:checked')].map(input => input.value);
 
 const el = id => document.getElementById(id);
+let cheatSheetBuilt = false;
+function buildCheatSheet(){
+  if(cheatSheetBuilt) return;
+  const content = el("cheatContent");
+  const units = {off:"Offense",def:"Defense",st:"Special teams"};
+  const depths = ["Starter","2nd","3rd","4th","Not listed"];
+  const labels = {Starter:"Starters","2nd":"2nd string","3rd":"3rd string","4th":"4th string","Not listed":"Unlisted depth"};
+  for(const depth of depths){
+    const players = ROSTER.filter(p => p.depth === depth);
+    if(!players.length) continue;
+    const section = document.createElement("section");
+    const heading = document.createElement("h3");
+    heading.className = "cheat-depth";
+    heading.textContent = labels[depth];
+    section.appendChild(heading);
+    for(const [unit, label] of Object.entries(units)){
+      const members = players.filter(p => p.unit === unit).sort((a,b) => a.pos.localeCompare(b.pos) || a.num - b.num);
+      if(!members.length) continue;
+      const unitHeading = document.createElement("h4");
+      unitHeading.className = "cheat-unit";
+      unitHeading.textContent = label;
+      section.appendChild(unitHeading);
+      const grid = document.createElement("div");
+      grid.className = "cheat-grid";
+      for(const p of members){
+        const card = document.createElement("article");
+        card.className = "cheat-player";
+        const photo = document.createElement("div");
+        photo.className = "cheat-photo";
+        photo.textContent = initials(p.n);
+        if(HEADSHOTS[p.n]){
+          const img = document.createElement("img");
+          img.src = HEADSHOTS[p.n];
+          img.alt = p.n + " headshot";
+          img.loading = "lazy";
+          img.referrerPolicy = "no-referrer";
+          img.addEventListener("error", () => { photo.textContent = initials(p.n); });
+          photo.textContent = "";
+          photo.appendChild(img);
+        }
+        const details = document.createElement("div");
+        const name = document.createElement("div");
+        name.className = "cheat-name";
+        const number = document.createElement("span");
+        number.className = "cheat-number";
+        number.textContent = "#" + p.num + " ";
+        name.appendChild(number);
+        name.appendChild(document.createTextNode(p.n));
+        details.appendChild(name);
+        const position = document.createElement("div");
+        position.className = "cheat-detail";
+        position.textContent = p.pos;
+        details.appendChild(position);
+        if(p.st !== "active"){
+          const status = document.createElement("div");
+          status.className = "cheat-detail";
+          status.textContent = p.st.toUpperCase();
+          details.appendChild(status);
+        }
+        if(p.also && p.also.length){
+          const also = document.createElement("div");
+          also.className = "cheat-detail";
+          also.textContent = "Also: " + p.also.join(" · ");
+          details.appendChild(also);
+        }
+        card.appendChild(photo);
+        card.appendChild(details);
+        grid.appendChild(card);
+      }
+      section.appendChild(grid);
+    }
+    content.appendChild(section);
+  }
+  cheatSheetBuilt = true;
+}
+el("openCheatSheet").addEventListener("click", () => {
+  buildCheatSheet();
+  el("setupScreen").classList.add("hidden");
+  el("cheatScreen").classList.remove("hidden");
+  el("cheatHeading").focus();
+  window.scrollTo(0,0);
+});
+function closeCheatSheet(){
+  el("cheatScreen").classList.add("hidden");
+  el("setupScreen").classList.remove("hidden");
+  el("openCheatSheet").focus();
+  window.scrollTo(0,0);
+}
+el("closeCheatSheet").addEventListener("click", closeCheatSheet);
+el("closeCheatSheetBottom").addEventListener("click", closeCheatSheet);
 function stopAnswerSounds(){
   [el("correctSound"), el("incorrectSound")].forEach(sound => {
     sound.pause();
