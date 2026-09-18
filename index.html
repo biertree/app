@@ -2,18 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Bears 2026 Roster — Learn</title>
-<meta name="theme-color" content="#0E1526">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bears Learn">
-<meta name="application-name" content="Bears Learn">
-<meta name="format-detection" content="telephone=no">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -34,17 +24,13 @@
     --red: #D6474A;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg);}
-  html{-webkit-text-size-adjust:100%;}
+  html,body{margin:0;padding:0;}
   body{
     background:var(--bg);
     color:var(--text);
     font-family:'Inter',system-ui,-apple-system,sans-serif;
     min-height:100vh;
-    min-height:100dvh;
-    padding:max(32px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(80px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
-    -webkit-tap-highlight-color:transparent;
-    overscroll-behavior-y:none;
+    padding:32px 22px 80px;
   }
   .wrap{max-width:760px;margin:0 auto;}
   h1{
@@ -111,6 +97,12 @@
   }
   .avatar img{width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:20px;display:block;image-rendering:auto;}
   .avatar.has-photo{overflow:hidden;background:var(--card-2);color:transparent;border:3px solid var(--line); box-shadow:0 10px 28px rgba(0,0,0,.28);}
+  .avatar.identity-clue{
+    flex-direction:column; gap:2px; background:var(--card-2); border:3px solid var(--line);
+    box-shadow:0 10px 28px rgba(0,0,0,.18); color:var(--text);
+  }
+  .avatar.identity-clue .clue-number{font-size:46px; line-height:1; color:var(--orange);}
+  .avatar.identity-clue .clue-position{font-family:'Inter',sans-serif; font-size:15px; color:var(--text-dim); text-align:center; padding:0 8px;}
   .grp-off{background:rgba(214,85,42,0.18); color:var(--orange-dim);}
   .grp-def{background:rgba(62,124,177,0.2); color:var(--blue-dim);}
   .grp-st{background:rgba(201,162,39,0.2); color:var(--gold-dim);}
@@ -168,7 +160,7 @@
   .legend span{font-size:14px; color:var(--text-dim); display:flex; align-items:center; gap:7px;}
   .dot{width:12px; height:12px; border-radius:50%;}
   @media (max-width: 560px){
-    body{padding:max(20px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(56px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));}
+    body{padding:20px 14px 56px;}
     .wrap{max-width:100%;}
     h1{font-size:27px;}
     .setup-card,.card{padding:24px 18px;}
@@ -431,6 +423,7 @@ let roundSize = 0;
 let roundCorrect = 0;
 let roundMissed = [];
 let current = null;
+let currentQuestionType = null;
 let awaitingAnswer = true;
 
 const el = id => document.getElementById(id);
@@ -499,7 +492,6 @@ function nextQuestion(){
   }
   current = roundQueue.shift();
   awaitingAnswer = true;
-  renderAvatar(current);
   if(current.note){
     el("roleNote").textContent = current.note;
   } else if(current.also && current.also.length){
@@ -511,13 +503,22 @@ function nextQuestion(){
   else if(mastery === 1) qtype = "mc-position";
   else if(mastery === 2) qtype = "mc-name";
   else qtype = "type-number";
+  currentQuestionType = qtype;
+  renderAvatar(current, qtype !== "mc-name");
   renderQuestion(current, qtype);
 }
 
-function renderAvatar(p){
+function renderAvatar(p, showPhoto = true){
   const grp = grpOf(p);
   const a = el("avatar");
   a.className = "avatar grp-" + grp;
+
+  if(!showPhoto){
+    a.classList.add("identity-clue");
+    a.innerHTML = "<span class='clue-number'>#" + p.num + "</span><span class='clue-position'>" + depthRole(p) + "</span>";
+    return;
+  }
+
   a.textContent = initials(p.n);
   const src = HEADSHOTS[p.n];
   if(src){
@@ -531,6 +532,10 @@ function renderAvatar(p){
     a.textContent = "";
     a.appendChild(img);
   }
+}
+
+function revealCurrentPlayer(){
+  if(currentQuestionType === "mc-name") renderAvatar(current, true);
 }
 
 function renderQuestion(p, qtype){
@@ -587,6 +592,7 @@ function buildMC(options, isCorrect, label){
 function handleMCAnswer(btn, correct){
   if(!awaitingAnswer) return;
   awaitingAnswer = false;
+  revealCurrentPlayer();
   const buttons = el("mcOptions").querySelectorAll(".opt");
   buttons.forEach(b => b.disabled = true);
   if(correct){
@@ -667,14 +673,6 @@ function finishAll(){
   el("doneSummary").textContent = "You've locked in the name, number, exact position and depth string for all " + totalPlayers + " players.";
   roundNum = 1;
 }
-</script>
-
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
-    });
-  }
 </script>
 </body>
 </html>
