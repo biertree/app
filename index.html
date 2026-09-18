@@ -185,6 +185,8 @@
 </style>
 </head>
 <body>
+<audio id="correctSound" src="./Correct.wav" preload="auto"></audio>
+<audio id="incorrectSound" src="./Incorrect.mp3" preload="auto"></audio>
 <div class="wrap">
   <h1>Chicago Bears — 2026 Roster</h1>
   <p class="sub">Learn mode · name, number, exact position and depth string</p>
@@ -256,6 +258,9 @@
       <label><input type="checkbox" name="format" value="mc" checked> Multiple choice</label>
       <label><input type="checkbox" name="format" value="type" checked> Typed answers</label>
       <small>Typed positions accept the full exact position or its abbreviation (e.g. QB, LT, WR1). Depth is not required. Names ignore capitalization and punctuation.</small>
+    </fieldset>
+    <fieldset class="settings-group"><legend>Sound</legend>
+      <label><input type="checkbox" id="soundEnabled" checked> Play correct / incorrect answer sounds</label>
     </fieldset>
     <div class="err" id="setupErr" role="alert"></div>
     <button class="btn-primary" id="startBtn">Start learning</button>
@@ -469,7 +474,27 @@ let advanceTimer;
 const selectedValues = name => [...document.querySelectorAll('input[name="' + name + '"]:checked')].map(input => input.value);
 
 const el = id => document.getElementById(id);
+function stopAnswerSounds(){
+  [el("correctSound"), el("incorrectSound")].forEach(sound => {
+    sound.pause();
+    try { sound.currentTime = 0; } catch (_) {}
+  });
+}
+function playAnswerSound(correct){
+  stopAnswerSounds();
+  if(!el("soundEnabled").checked) return;
+  const sound = el(correct ? "correctSound" : "incorrectSound");
+  // Play directly from the answer tap or Enter key for mobile browsers.
+  try {
+    const playback = sound.play();
+    if(playback) playback.catch(() => {});
+  } catch (_) {
+    // Audio failures must not interrupt the quiz.
+  }
+}
+el("soundEnabled").addEventListener("change", stopAnswerSounds);
 el("settingsBtn").addEventListener("click", () => {
+  stopAnswerSounds();
   clearTimeout(advanceTimer);
   awaitingAnswer = false;
   el("quizScreen").classList.add("hidden");
@@ -733,6 +758,7 @@ function submitTypeAnswer(){
 }
 
 function onCorrect(){
+  playAnswerSound(true);
   current.mastery += 1;
   current.pending.shift();
   el("feedback").textContent = "Correct";
@@ -747,6 +773,7 @@ function onCorrect(){
   advanceTimer = setTimeout(advance, 1800);
 }
 function onWrong(){
+  playAnswerSound(false);
   current.pending.push(current.pending.shift());
   el("feedback").textContent = "Not quite — it's " + answerFor(current, questionSubject());
   el("feedback").className = "feedback bad";
