@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Bears 2026 Roster — Learn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E1526;
+    --card: #172136;
+    --card-2: #1D2A44;
+    --line: #2A3852;
+    --text: #F2EFE6;
+    --text-dim: #94A0B8;
+    --orange: #D6552A;
+    --orange-dim: #E8B39F;
+    --blue: #3E7CB1;
+    --blue-dim: #B9D3E6;
+    --gold: #C9A227;
+    --gold-dim: #ECDCA0;
+    --green: #4FAE6D;
+    --red: #D6474A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    min-height:100vh;
+    padding:32px 22px 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:32px;
+    letter-spacing:0.3px;
+    margin:0 0 2px;
+  }
+  .sub{color:var(--text-dim); font-size:17px; line-height:1.5; margin:0 0 24px;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .stat{font-family:'Oswald',sans-serif; font-size:18px; color:var(--text-dim);}
+  .stat b{color:var(--text); font-weight:600;}
+  .progress-track{
+    height:12px; border-radius:7px; background:var(--card-2); overflow:hidden; margin-bottom:28px;
+  }
+  .progress-fill{
+    height:100%; background:var(--orange); width:0%; transition:width .3s ease;
+  }
+  .setup-card, .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:32px 30px;
+  }
+  .setup-card p{color:var(--text-dim); font-size:18px; line-height:1.7; margin:0 0 20px;}
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px; background:var(--card-2); border-radius:12px; margin-bottom:16px;
+  }
+  .toggle-row span{font-size:17px;}
+  .toggle-row small{display:block; color:var(--text-dim); font-size:14px; margin-top:4px;}
+  .switch{
+    position:relative; width:54px; height:32px; flex:0 0 auto; margin-left:12px;
+  }
+  .switch input{opacity:0; width:0; height:0;}
+  .slider-el{
+    position:absolute; cursor:pointer; inset:0; background:#3A4763; border-radius:26px; transition:.2s;
+  }
+  .slider-el:before{
+    content:""; position:absolute; height:24px; width:24px; left:4px; top:4px;
+    background:#fff; border-radius:50%; transition:.2s;
+  }
+  input:checked + .slider-el{background:var(--orange);}
+  input:checked + .slider-el:before{transform:translateX(22px);}
+  button{
+    font-family:'Inter',sans-serif;
+    border:none; cursor:pointer;
+  }
+  .btn-primary{
+    width:100%; padding:18px; border-radius:12px; background:var(--orange); color:#2A0F06;
+    font-weight:700; font-size:18px; margin-top:8px;
+  }
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-ghost{
+    width:100%; padding:16px; border-radius:12px; background:transparent; color:var(--text-dim);
+    font-weight:500; font-size:16px; margin-top:12px; border:1px solid var(--line);
+  }
+  .avatar{
+    width:150px; height:150px; border-radius:22px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:40px;
+    margin:0 auto 22px;
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:20px;display:block;image-rendering:auto;}
+  .avatar.has-photo{overflow:hidden;background:var(--card-2);color:transparent;border:3px solid var(--line); box-shadow:0 10px 28px rgba(0,0,0,.28);}
+  .grp-off{background:rgba(214,85,42,0.18); color:var(--orange-dim);}
+  .grp-def{background:rgba(62,124,177,0.2); color:var(--blue-dim);}
+  .grp-st{background:rgba(201,162,39,0.2); color:var(--gold-dim);}
+  .qtag{
+    text-align:center; font-size:15px; color:var(--text-dim); margin-bottom:8px;
+  }
+  .prompt{
+    text-align:center; font-family:'Oswald',sans-serif; font-weight:600;
+    font-size:29px; line-height:1.4; margin:0 0 24px;
+  }
+  .prompt .hl{color:var(--orange);}
+  .role-note{min-height:20px; margin:-8px 0 20px; text-align:center; color:var(--text-dim); font-size:14px; line-height:1.5;}
+  .options{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .options.position-options{grid-template-columns:1fr;}
+  .opt{
+    background:var(--card-2); border:1.5px solid var(--line); border-radius:12px;
+    padding:18px 14px; text-align:center; font-size:18px; font-weight:600; color:var(--text);
+    line-height:1.35; min-height:62px;
+  }
+  .opt:active{transform:scale(0.97);}
+  .opt.correct{background:rgba(79,174,109,0.22); border-color:var(--green); color:#B9E6C7;}
+  .opt.wrong{background:rgba(214,71,74,0.22); border-color:var(--red); color:#F3B6B7;}
+  .opt.reveal{background:rgba(79,174,109,0.22); border-color:var(--green); color:#B9E6C7;}
+  .typein-row{display:flex; gap:8px; margin-top:4px;}
+  input[type=text]{
+    flex:1; background:var(--card-2); border:1.5px solid var(--line); border-radius:10px;
+    padding:17px; font-size:20px; color:var(--text); font-family:'Oswald',sans-serif; text-align:center;
+  }
+  input[type=text]:focus{outline:none; border-color:var(--orange);}
+  .typein-row button{
+    background:var(--orange); color:#2A0F06; border-radius:12px; padding:0 24px; font-weight:700; font-size:17px;
+  }
+  .feedback{
+    font-size:17px; text-align:center; margin-top:16px; min-height:24px;
+  }
+  .feedback.good{color:var(--green);}
+  .feedback.bad{color:var(--red);}
+  .err{color:var(--red); font-size:15px; text-align:center; margin-top:10px; min-height:18px;}
+  .roundend{text-align:center;}
+  .roundend .big{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:48px; margin:8px 0 4px; color:var(--orange);
+  }
+  .roundend p{color:var(--text-dim); font-size:18px; margin:0 0 24px;}
+  .donewrap{text-align:center;}
+  .donewrap .trophy{font-size:44px; margin-bottom:8px;}
+  .miss-list{
+    text-align:left; margin-top:16px; border-top:1px solid var(--line); padding-top:14px;
+  }
+  .miss-list .row{
+    display:flex; justify-content:space-between; font-size:13px; padding:6px 0; color:var(--text-dim);
+  }
+  .miss-list .row b{color:var(--text); font-weight:500;}
+  .hidden{display:none;}
+  .legend{display:flex; gap:14px; justify-content:center; margin-top:16px; flex-wrap:wrap;}
+  .legend span{font-size:14px; color:var(--text-dim); display:flex; align-items:center; gap:7px;}
+  .dot{width:12px; height:12px; border-radius:50%;}
+  @media (max-width: 560px){
+    body{padding:20px 14px 56px;}
+    .wrap{max-width:100%;}
+    h1{font-size:27px;}
+    .setup-card,.card{padding:24px 18px;}
+    .avatar{width:128px;height:128px;}
+    .prompt{font-size:25px;}
+    .options{grid-template-columns:1fr;}
+    .opt{font-size:17px;padding:17px 12px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Chicago Bears — 2026 Roster</h1>
+  <p class="sub">Learn mode · name, number, exact position and depth string</p>
+
+  <div id="setupScreen" class="setup-card">
+    <p>This works like a Quizlet Learn session: you'll get multiple-choice and typed questions about each player. Answer a player right twice in a row and they're marked mastered — miss one and they come back around sooner.</p>
+    <p style="margin-bottom:14px;">Player headshots are loaded from the official Chicago Bears roster page. Positions and depth strings use ESPN's Bears depth chart (Starter, 2nd, 3rd, 4th). If a photo can't load, the colored initials badge appears as a fallback.</p>
+    <p style="margin-bottom:14px;">Choose which units to include:</p>
+    <div class="toggle-row">
+      <div>
+        <span>Offense</span>
+        <small>Include offensive players</small>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="includeOff" checked>
+        <span class="slider-el"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <span>Defense</span>
+        <small>Include defensive players</small>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="includeDef" checked>
+        <span class="slider-el"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <span>Special teams</span>
+        <small>Include kickers, punters, and long snapper</small>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="includeST" checked>
+        <span class="slider-el"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <span>Include reserve / injured players</span>
+        <small>Adds 9 players currently on IR or PUP</small>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="includeIR">
+        <span class="slider-el"></span>
+      </label>
+    </div>
+    <div class="err" id="setupErr"></div>
+    <button class="btn-primary" id="startBtn">Start learning</button>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--orange)"></span>Offense</span>
+      <span><span class="dot" style="background:var(--blue)"></span>Defense</span>
+      <span><span class="dot" style="background:var(--gold)"></span>Special teams</span>
+    </div>
+  </div>
+
+  <div id="quizScreen" class="hidden">
+    <div class="topbar">
+      <span class="stat">Mastered <b id="masteredCount">0</b>/<span id="totalCount">0</span></span>
+      <span class="stat" id="roundLabel">Round 1</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="card" id="questionCard">
+      <div class="avatar" id="avatar"></div>
+      <div class="qtag" id="qtag"></div>
+      <div class="prompt" id="promptText"></div>
+      <div class="role-note" id="roleNote"></div>
+
+      <div class="options" id="mcOptions"></div>
+
+      <div id="typeArea" class="hidden">
+        <div class="typein-row">
+          <input type="text" id="typeInput" inputmode="numeric" placeholder="Type the number">
+          <button id="submitType">Check</button>
+        </div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="err" id="errMsg"></div>
+    </div>
+  </div>
+
+  <div id="roundEndScreen" class="hidden">
+    <div class="card roundend">
+      <div class="qtag">Round complete</div>
+      <div class="big" id="roundScore"></div>
+      <p id="roundSummary"></p>
+      <button class="btn-primary" id="nextRoundBtn">Keep going</button>
+    </div>
+  </div>
+
+  <div id="doneScreen" class="hidden">
+    <div class="card donewrap">
+      <div class="trophy">🏆</div>
+      <h1 style="font-size:19px;">Every player mastered</h1>
+      <p class="sub" id="doneSummary"></p>
+      <button class="btn-primary" id="restartBtn">Start over</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROSTER = [
+  {n:"Tyson Bagent",num:17,pos:"Quarterback",depth:"2nd",unit:"off",st:"active"},
+  {n:"Theo Benedet",num:79,pos:"Left Tackle",depth:"3rd",unit:"off",st:"active",also:["2nd — Right Tackle"]},
+  {n:"Josh Blackwell",num:39,pos:"Left Cornerback",depth:"2nd",unit:"def",st:"active",also:["3rd — Punt Returner","3rd — Kick Returner"]},
+  {n:"Austin Booker",num:94,pos:"Left Defensive End",depth:"2nd",unit:"def",st:"active"},
+  {n:"Garrett Bradbury",num:67,pos:"Center",depth:"Starter",unit:"off",st:"active"},
+  {n:"Luther Burden III",num:10,pos:"Wide Receiver 2",depth:"Starter",unit:"off",st:"active"},
+  {n:"Devin Bush",num:12,pos:"Weakside Linebacker",depth:"Starter",unit:"def",st:"active"},
+  {n:"T.J. Edwards",num:53,pos:"Middle Linebacker",depth:"Starter",unit:"def",st:"active"},
+  {n:"Keyshaun Elliott",num:49,pos:"Middle Linebacker",depth:"2nd",unit:"def",st:"active"},
+  {n:"Neville Gallimore",num:90,pos:"Left Defensive Tackle",depth:"2nd",unit:"def",st:"active"},
+  {n:"Beau Gardner",num:45,pos:"Long Snapper",depth:"Starter",unit:"st",st:"active"},
+  {n:"Daniel Hardy",num:92,pos:"Right Defensive End",depth:"2nd",unit:"def",st:"active"},
+  {n:"Elijah Hicks",num:22,pos:"Strong Safety",depth:"2nd",unit:"def",st:"active"},
+  {n:"D'Marco Jackson",num:48,pos:"Strongside Linebacker",depth:"Starter",unit:"def",st:"active"},
+  {n:"Jonah Jackson",num:73,pos:"Right Guard",depth:"Starter",unit:"off",st:"active"},
+  {n:"Grady Jarrett",num:50,pos:"Left Defensive Tackle",depth:"Starter",unit:"def",st:"active"},
+  {n:"Jaylon Johnson",num:1,pos:"Left Cornerback",depth:"Starter",unit:"def",st:"active"},
+  {n:"Roschon Johnson",num:23,pos:"Running Back",depth:"3rd",unit:"off",st:"active"},
+  {n:"Braxton Jones",num:70,pos:"Left Tackle",depth:"Starter",unit:"off",st:"active"},
+  {n:"Logan Jones",num:54,pos:"Center",depth:"2nd",unit:"off",st:"active"},
+  {n:"Case Keenum",num:11,pos:"Quarterback",depth:"3rd",unit:"off",st:"active"},
+  {n:"Cole Kmet",num:85,pos:"Tight End",depth:"2nd",unit:"off",st:"active"},
+  {n:"Jamree Kromah",num:59,pos:"Left Defensive End",depth:"3rd",unit:"def",st:"active"},
+  {n:"Cam Lewis",num:21,pos:"Nickel Back",depth:"Starter",unit:"def",st:"active"},
+  {n:"Colston Loveland",num:84,pos:"Tight End",depth:"Starter",unit:"off",st:"active"},
+  {n:"Jayden Loving",num:91,pos:"Right Defensive Tackle",depth:"3rd",unit:"def",st:"active"},
+  {n:"James Lynch",num:97,pos:"Left Defensive Tackle",depth:"3rd",unit:"def",st:"active"},
+  {n:"Jordan McFadden",num:74,pos:"Left Guard",depth:"2nd",unit:"off",st:"active"},
+  {n:"Kyle Monangai",num:25,pos:"Running Back",depth:"2nd",unit:"off",st:"active"},
+  {n:"Malik Muhammad II",num:24,pos:"Nickel Back",depth:"2nd",unit:"def",st:"active"},
+  {n:"Luke Newman",num:65,pos:"Right Guard",depth:"2nd",unit:"off",st:"active"},
+  {n:"Dayo Odeyingbo",num:55,pos:"Right Defensive End",depth:"Starter",unit:"def",st:"active"},
+  {n:"Rome Odunze",num:15,pos:"Wide Receiver 1",depth:"Starter",unit:"off",st:"active"},
+  {n:"Clark Phillips III",num:20,pos:"Right Cornerback",depth:"2nd",unit:"def",st:"active"},
+  {n:"Kalif Raymond",num:14,pos:"Wide Receiver 3",depth:"Starter",unit:"off",st:"active",also:["Starter — Punt Returner","Starter — Kick Returner"]},
+  {n:"Sam Roush",num:87,pos:"Tight End",depth:"3rd",unit:"off",st:"active"},
+  {n:"Jack Sanborn",num:57,pos:"Strongside Linebacker",depth:"2nd",unit:"def",st:"active"},
+  {n:"Cairo Santos",num:8,pos:"Place Kicker",depth:"Starter",unit:"st",st:"active"},
+  {n:"Tyrique Stevenson",num:29,pos:"Right Cornerback",depth:"Starter",unit:"def",st:"active"},
+  {n:"Kentavius Street",num:93,pos:"Right Defensive Tackle",depth:"Starter",unit:"def",st:"active"},
+  {n:"Montez Sweat",num:98,pos:"Left Defensive End",depth:"Starter",unit:"def",st:"active"},
+  {n:"D'Andre Swift",num:4,pos:"Running Back",depth:"Starter",unit:"off",st:"active"},
+  {n:"Tory Taylor",num:19,pos:"Punter",depth:"Starter",unit:"st",st:"active",also:["Starter — Holder"]},
+  {n:"Dillon Thieneman",num:31,pos:"Strong Safety",depth:"Starter",unit:"def",st:"active"},
+  {n:"Skyler Thomas",num:38,pos:"Free Safety",depth:"2nd",unit:"def",st:"active"},
+  {n:"Zavion Thomas",num:81,pos:"Wide Receiver 1",depth:"2nd",unit:"off",st:"active",also:["2nd — Punt Returner","2nd — Kick Returner"]},
+  {n:"Joe Thuney",num:62,pos:"Left Guard",depth:"Starter",unit:"off",st:"active"},
+  {n:"Ozzy Trapilo",num:75,pos:"Left Tackle",depth:"2nd",unit:"off",st:"active"},
+  {n:"Jordan van den Berg",num:96,pos:"Right Defensive Tackle",depth:"2nd",unit:"def",st:"active"},
+  {n:"Jahdae Walker",num:9,pos:"Wide Receiver 2",depth:"2nd",unit:"off",st:"active"},
+  {n:"Caleb Williams",num:18,pos:"Quarterback",depth:"Starter",unit:"off",st:"active"},
+  {n:"Xavier Woods",num:32,pos:"Free Safety",depth:"Starter",unit:"def",st:"active"},
+  {n:"Darnell Wright",num:58,pos:"Right Tackle",depth:"Starter",unit:"off",st:"active"},
+  {n:"Brittain Brown",num:38,pos:"Running Back",depth:"4th",unit:"off",st:"ir"},
+  {n:"Coby Bryant",num:2,pos:"Free Safety",depth:"3rd",unit:"def",st:"ir"},
+  {n:"Tony Fields II",num:43,pos:"Weakside Linebacker",depth:"2nd",unit:"def",st:"ir"},
+  {n:"Nikola Kalinic",num:86,pos:"Tight End",depth:"4th",unit:"off",st:"ir"},
+  {n:"Hayden Large",num:43,pos:"Tight End",depth:"Not listed",unit:"off",st:"ir",note:"Not listed on ESPN's current Bears depth chart"},
+  {n:"Nephi Sewell",num:46,pos:"Weakside Linebacker",depth:"3rd",unit:"def",st:"ir"},
+  {n:"Kyler Gordon",num:6,pos:"Nickel Back",depth:"3rd",unit:"def",st:"pup"},
+  {n:"Noah Sewell",num:44,pos:"Middle Linebacker",depth:"3rd",unit:"def",st:"pup"},
+  {n:"Shemar Turner",num:95,pos:"Right Defensive Tackle",depth:"4th",unit:"def",st:"pup"}
+];
+const HEADSHOTS = {
+  "Tyson Bagent": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/vvgl3mwrlkvzkpd5hedw.jpg",
+  "Theo Benedet": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715702093/bears/schpqip1idgrz8sqd3jd.jpg",
+  "Josh Blackwell": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/mni7jnt9xicqqivsecvv.jpg",
+  "Austin Booker": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/tw5nsxrfnkfwrcjluaqq.jpg",
+  "Garrett Bradbury": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/nm1nysfhbdma0ohhfky2.jpg",
+  "Luther Burden III": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748530637/bears/fzjmu2cbx4rbrsmpqr8l.jpg",
+  "Devin Bush": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1773085645/bears/t1ugn8lfgd2gkdnprdbj.jpg",
+  "T.J. Edwards": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715704854/bears/nmlxd6u2z2rbubtre1kj.jpg",
+  "Keyshaun Elliott": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/qavxtio2jpwfknsknut5.jpg",
+  "Neville Gallimore": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1773085547/bears/loak1prmrc3fydqzzujc.jpg",
+  "Beau Gardner": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/cueqwilstp8k2t5rywyg.jpg",
+  "Daniel Hardy": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531181/bears/awik0phss7hskfcamu66.jpg",
+  "Elijah Hicks": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/uouqqfbbjzbepi7t97pa.jpg",
+  "D'Marco Jackson": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1756565119/bears/vxt4frkje0rbgchzxynr.jpg",
+  "Jonah Jackson": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531346/bears/rgb7cgvboahsflve2kbq.jpg",
+  "Grady Jarrett": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531391/bears/tnizcfqa4dgulh1jf5au.jpg",
+  "Jaylon Johnson": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748625633/bears/iytqn9lvzphui3yhl21l.jpg",
+  "Roschon Johnson": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715705206/bears/xvwlgljoimirrtjhvc7e.jpg",
+  "Braxton Jones": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531527/bears/ddfhpjdqlcsqbl7nsfa2.jpg",
+  "Logan Jones": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/nvgapur6mcdaiwlvrssh.jpg",
+  "Case Keenum": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/pclk7rhqxja4hzww3w8u.jpg",
+  "Cole Kmet": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715704221/bears/pf9o2xid9arlz5ovvblh.jpg",
+  "Jamree Kromah": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531597/bears/becpcc0infyhmjaygg0q.jpg",
+  "Cam Lewis": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/fycjuyy6djvvp4jre1au.jpg",
+  "Colston Loveland": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531629/bears/kkzwvum60fc7efaepyp2.jpg",
+  "Jayden Loving": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/nm9w1uupnakvqertadx1.jpg",
+  "James Lynch": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1773845141/bears/honegvqydlq9pjtvtsxh.jpg",
+  "Jordan McFadden": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531693/bears/qbcprdycb8o5ejxnu8rj.jpg",
+  "Kyle Monangai": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531794/bears/k4u8emc70asnvvu9tqyb.jpg",
+  "Malik Muhammad II": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/tfpj1pdubentfzhxt7db.jpg",
+  "Luke Newman": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531890/bears/ywsswlrf6lp1rvlzhww6.jpg",
+  "Dayo Odeyingbo": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748531917/bears/kpqkhddvm8qvfss6mhcz.jpg",
+  "Rome Odunze": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/ukqddsrj8a3teirk3xkw.jpg",
+  "Clark Phillips III": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1788963654/bears/qzollwil16fkhnkml4n4.jpg",
+  "Kalif Raymond": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1773238526/bears/zq9kvcwml6mdtgorxto8.jpg",
+  "Sam Roush": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1778215014/bears/odvskyut2faoqek0rgfb.jpg",
+  "Jack Sanborn": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715704814/bears/qkcgxb1jpxyxuzgbxcq8.jpg",
+  "Cairo Santos": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715705379/bears/c4akuxuichat7twcidsq.jpg",
+  "Tyrique Stevenson": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748532306/bears/vkayynx5h2mkta2ddqqt.jpg",
+  "Kentavius Street": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/tlofal2nitjelnhbdedx.jpg",
+  "Montez Sweat": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/d4zm9vmyz4yuk8dndacr.jpg",
+  "D'Andre Swift": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715702824/bears/vofadqdu8np6zfll6i9d.jpg",
+  "Tory Taylor": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715703579/bears/ncywp7mrslfquzhsn3pc.jpg",
+  "Dillon Thieneman": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1778214884/bears/ogdnyasp7asfdje8qwlm.jpg",
+  "Skyler Thomas": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/bfgxattsctl6lzjdc3am.jpg",
+  "Zavion Thomas": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/caecwmbhewdqznrq4phf.jpg",
+  "Joe Thuney": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/kwz1f5uaq4hkvao5vrqa.jpg",
+  "Ozzy Trapilo": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748532559/bears/v7puty3bki9tcgwsqgws.jpg",
+  "Jordan van den Berg": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/alqzvuu5tqpidbw5zowx.jpg",
+  "Jahdae Walker": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/a7uznueb1ptemrqsycwj.jpg",
+  "Caleb Williams": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715703686/bears/tejh8jk8nrvoulnxtab4.jpg",
+  "Xavier Woods": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/smuatb5ojy6i3flkbcek.jpg",
+  "Darnell Wright": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715704784/bears/cml0hthvtffy3p6si7e4.jpg",
+  "Brittain Brown": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1754924170/bears/dchfdcsst25ygz5nvtcj.jpg",
+  "Coby Bryant": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1773085603/bears/s34ccwmuqqkwavfeesp9.jpg",
+  "Tony Fields II": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/q6wwlrc8b46fhx8ouruk.jpg",
+  "Nikola Kalinic": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/ahcr0rh2zjeeixvfnofi.jpg",
+  "Hayden Large": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/vg9mp4b95rigqpadcrdc.jpg",
+  "Nephi Sewell": "https://static.www.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/league/whfernvrrhmopmxfucso",
+  "Kyler Gordon": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715705401/bears/pkmixw027khpuq57i5pz.jpg",
+  "Noah Sewell": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748532153/bears/ipzvzwa859eag2bo63td.jpg",
+  "Shemar Turner": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748532587/bears/jtk7iluwq3czqq3ghot3.jpg"
+};
+
+function depthRole(p){ return p.depth + " — " + p.pos; }
+function allDepthRoles(p){ return [depthRole(p), ...(p.also || [])]; }
+function grpOf(p){ return p.unit; }
+function initials(name){
+  const parts = name.replace(/[.']/g,"").split(" ").filter(w=>!["II","III","IV"].includes(w));
+  return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pickN(arr, n, exclude){ const pool = arr.filter(x=>x!==exclude); return shuffle(pool).slice(0,n); }
+
+let pool = [];
+let masteredTotal = 0;
+let totalPlayers = 0;
+let roundQueue = [];
+let roundSize = 0;
+let roundCorrect = 0;
+let roundMissed = [];
+let current = null;
+let awaitingAnswer = true;
+
+const el = id => document.getElementById(id);
+
+el("startBtn").addEventListener("click", () => {
+  const includeIR = el("includeIR").checked;
+  const selectedUnits = [];
+  if(el("includeOff").checked) selectedUnits.push("off");
+  if(el("includeDef").checked) selectedUnits.push("def");
+  if(el("includeST").checked) selectedUnits.push("st");
+
+  if(selectedUnits.length === 0){
+    el("setupErr").textContent = "Select at least one unit to start.";
+    return;
+  }
+  el("setupErr").textContent = "";
+
+  const statusFiltered = includeIR ? ROSTER : ROSTER.filter(p => p.st === "active");
+  const base = statusFiltered.filter(p => selectedUnits.includes(p.unit));
+  pool = base.map(p => ({...p, mastery:0}));
+  totalPlayers = pool.length;
+  masteredTotal = 0;
+  el("totalCount").textContent = totalPlayers;
+  el("setupScreen").classList.add("hidden");
+  el("quizScreen").classList.remove("hidden");
+  startRound();
+});
+
+el("restartBtn").addEventListener("click", () => {
+  el("doneScreen").classList.add("hidden");
+  el("setupScreen").classList.remove("hidden");
+});
+
+function updateProgress(){
+  el("masteredCount").textContent = masteredTotal;
+  const pct = totalPlayers ? Math.round((masteredTotal/totalPlayers)*100) : 0;
+  el("progressFill").style.width = pct + "%";
+}
+
+let roundNum = 1;
+function startRound(){
+  const remaining = pool.filter(p => p.mastery < 4);
+  if(remaining.length === 0){
+    finishAll();
+    return;
+  }
+  const sorted = shuffle(remaining).sort((a,b) => a.mastery - b.mastery);
+  roundQueue = sorted.slice(0, Math.min(7, sorted.length));
+  roundSize = roundQueue.length;
+  roundCorrect = 0;
+  roundMissed = [];
+  el("roundLabel").textContent = "Round " + roundNum;
+  el("quizScreen").classList.remove("hidden");
+  el("roundEndScreen").classList.add("hidden");
+  nextQuestion();
+}
+
+function nextQuestion(){
+  el("errMsg").textContent = "";
+  el("feedback").textContent = "";
+  el("feedback").className = "feedback";
+  el("roleNote").textContent = "";
+  if(roundQueue.length === 0){
+    endRound();
+    return;
+  }
+  current = roundQueue.shift();
+  awaitingAnswer = true;
+  renderAvatar(current);
+  if(current.note){
+    el("roleNote").textContent = current.note;
+  } else if(current.also && current.also.length){
+    el("roleNote").textContent = "Also on ESPN depth chart: " + current.also.join(" · ");
+  }
+  const mastery = current.mastery;
+  let qtype;
+  if(mastery === 0) qtype = "mc-number";
+  else if(mastery === 1) qtype = "mc-position";
+  else if(mastery === 2) qtype = "mc-name";
+  else qtype = "type-number";
+  renderQuestion(current, qtype);
+}
+
+function renderAvatar(p){
+  const grp = grpOf(p);
+  const a = el("avatar");
+  a.className = "avatar grp-" + grp;
+  a.textContent = initials(p.n);
+  const src = HEADSHOTS[p.n];
+  if(src){
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = p.n + " headshot";
+    img.loading = "eager";
+    img.referrerPolicy = "no-referrer";
+    img.addEventListener("load", () => a.classList.add("has-photo"));
+    img.addEventListener("error", () => { a.className = "avatar grp-" + grp; a.textContent = initials(p.n); });
+    a.textContent = "";
+    a.appendChild(img);
+  }
+}
+
+function renderQuestion(p, qtype){
+  el("mcOptions").innerHTML = "";
+  el("typeArea").classList.add("hidden");
+  el("mcOptions").classList.remove("hidden");
+  el("mcOptions").classList.toggle("position-options", qtype === "mc-position");
+
+  if(qtype === "mc-number"){
+    el("qtag").textContent = "Jersey number";
+    el("promptText").innerHTML = "What number does <span class='hl'>" + p.n + "</span> (" + depthRole(p) + ") wear?";
+    const distractors = pickN(pool, 3, p).map(x=>x.num);
+    const options = shuffle([p.num, ...distractors]);
+    buildMC(options, opt => opt === p.num, opt => "#" + opt);
+  } else if(qtype === "mc-position"){
+    el("qtag").textContent = "Position";
+    el("promptText").innerHTML = "What position does <span class='hl'>#" + p.num + " " + p.n + "</span> play?";
+    const answer = depthRole(p);
+    const others = [...new Set(pool.filter(x=>x!==p).map(x=>depthRole(x)).filter(x=>x!==answer))];
+    const distractors = shuffle(others).slice(0,3);
+    const options = shuffle([answer, ...distractors]);
+    buildMC(options, opt => opt === answer, opt => opt);
+  } else if(qtype === "mc-name"){
+    el("qtag").textContent = "Name";
+    el("promptText").innerHTML = "Who wears <span class='hl'>#" + p.num + "</span> and is <span class='hl'>" + depthRole(p) + "</span>?";
+    const samePos = pool.filter(x => x.pos === p.pos && x !== p);
+    const distractorPool = samePos.length >= 3 ? samePos : pool;
+    const distractors = pickN(distractorPool, 3, p).map(x=>x.n);
+    const options = shuffle([p.n, ...distractors]);
+    buildMC(options, opt => opt === p.n, opt => opt);
+  } else {
+    el("qtag").textContent = "Type it in";
+    el("promptText").innerHTML = "Type the jersey number for <span class='hl'>" + p.n + "</span> (" + depthRole(p) + ")";
+    el("mcOptions").classList.add("hidden");
+    el("typeArea").classList.remove("hidden");
+    el("typeInput").value = "";
+    el("typeInput").disabled = false;
+    setTimeout(()=>el("typeInput").focus(), 50);
+  }
+}
+
+function buildMC(options, isCorrect, label){
+  const wrap = el("mcOptions");
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.textContent = label(opt);
+    btn.dataset.correct = isCorrect(opt) ? "1" : "0";
+    btn.addEventListener("click", () => handleMCAnswer(btn, isCorrect(opt)));
+    wrap.appendChild(btn);
+  });
+}
+
+function handleMCAnswer(btn, correct){
+  if(!awaitingAnswer) return;
+  awaitingAnswer = false;
+  const buttons = el("mcOptions").querySelectorAll(".opt");
+  buttons.forEach(b => b.disabled = true);
+  if(correct){
+    btn.classList.add("correct");
+    onCorrect();
+  } else {
+    btn.classList.add("wrong");
+    buttons.forEach(b => { if(b.dataset.correct === "1") b.classList.add("reveal"); });
+    onWrong();
+  }
+}
+
+el("submitType").addEventListener("click", submitTypeAnswer);
+el("typeInput").addEventListener("keydown", e => { if(e.key === "Enter") submitTypeAnswer(); });
+
+function submitTypeAnswer(){
+  if(!awaitingAnswer) return;
+  const val = el("typeInput").value.trim();
+  if(val === ""){
+    el("errMsg").textContent = "Enter a number first";
+    return;
+  }
+  el("errMsg").textContent = "";
+  awaitingAnswer = false;
+  el("typeInput").disabled = true;
+  const correct = parseInt(val, 10) === current.num;
+  if(correct){
+    onCorrect();
+  } else {
+    el("feedback").textContent = "Not quite — it's #" + current.num;
+    el("feedback").className = "feedback bad";
+    onWrong();
+  }
+}
+
+function onCorrect(){
+  current.mastery += 1;
+  el("feedback").textContent = "Correct";
+  el("feedback").className = "feedback good";
+  roundCorrect += 1;
+  if(current.mastery >= 4){
+    masteredTotal += 1;
+    updateProgress();
+  } else {
+    roundQueue.push(current);
+  }
+  setTimeout(advance, 700);
+}
+function onWrong(){
+  current.mastery = Math.max(0, current.mastery - 1);
+  roundMissed.push(current.n + " — #" + current.num + " · " + depthRole(current));
+  roundQueue.push(current);
+  setTimeout(advance, 1100);
+}
+
+function advance(){
+  nextQuestion();
+}
+
+function endRound(){
+  el("quizScreen").classList.add("hidden");
+  el("roundEndScreen").classList.remove("hidden");
+  el("roundScore").textContent = roundCorrect + "/" + (roundCorrect + roundMissed.length);
+  const remaining = pool.filter(p => p.mastery < 4).length;
+  el("roundSummary").textContent = remaining + " player" + (remaining===1?"":"s") + " still to master.";
+  roundNum += 1;
+}
+
+el("nextRoundBtn").addEventListener("click", () => {
+  updateProgress();
+  startRound();
+});
+
+function finishAll(){
+  el("quizScreen").classList.add("hidden");
+  el("roundEndScreen").classList.add("hidden");
+  el("doneScreen").classList.remove("hidden");
+  el("doneSummary").textContent = "You've locked in the name, number, exact position and depth string for all " + totalPlayers + " players.";
+  roundNum = 1;
+}
+</script>
+</body>
+</html>
