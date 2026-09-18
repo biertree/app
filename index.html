@@ -33,6 +33,12 @@
     padding:32px 22px 80px;
   }
   .wrap{max-width:760px;margin:0 auto;}
+  .settings-group{border:1px solid var(--line);border-radius:12px;margin:22px 0;padding:16px;min-width:0;}
+  .settings-group legend{font-weight:600;color:var(--orange-dim);padding:0 6px;}
+  .settings-group label{display:flex;align-items:center;gap:12px;min-height:44px;line-height:1.4;}
+  .settings-group input{width:20px;height:20px;flex-shrink:0;accent-color:var(--orange);}
+  .settings-group small{display:block;color:var(--text-dim);line-height:1.5;margin:4px 0 12px;}
+  .typein-row input{min-width:0;}
   h1{
     font-family:'Oswald',sans-serif;
     font-weight:600;
@@ -177,7 +183,7 @@
   <p class="sub">Learn mode · name, number, exact position and depth string</p>
 
   <div id="setupScreen" class="setup-card">
-    <p>This works like a Quizlet Learn session: you'll get multiple-choice and typed questions about each player. Answer a player right twice in a row and they're marked mastered — miss one and they come back around sooner.</p>
+    <p>Choose your players, question types, and answer formats. Complete every enabled question and format for each player to master them. Missed questions return for another try.</p>
     <p style="margin-bottom:14px;">Player headshots are loaded from the official Chicago Bears roster page. Positions and depth strings use ESPN's Bears depth chart (Starter, 2nd, 3rd, 4th). If a photo can't load, the colored initials badge appears as a fallback.</p>
     <p style="margin-bottom:14px;">Choose which units to include:</p>
     <div class="toggle-row">
@@ -220,7 +226,31 @@
         <span class="slider-el"></span>
       </label>
     </div>
-    <div class="err" id="setupErr"></div>
+    <fieldset class="settings-group"><legend>Depth chart</legend>
+      <small>Filters each player's primary listed depth. Reserve status still uses the toggle above.</small>
+      <label><input type="checkbox" name="depth" value="Starter" checked> Starters</label>
+      <label><input type="checkbox" name="depth" value="2nd" checked> 2nd string</label>
+      <label><input type="checkbox" name="depth" value="3rd" checked> 3rd string</label>
+      <label><input type="checkbox" name="depth" value="4th" checked> 4th string</label>
+      <label><input type="checkbox" name="depth" value="Not listed" checked> Unlisted depth</label>
+    </fieldset>
+    <fieldset class="settings-group"><legend>Standard questions</legend>
+      <label><input type="checkbox" name="question" value="number" checked> Ask for number</label>
+      <label><input type="checkbox" name="question" value="name" checked> Ask for name (number + position clues; photo hidden)</label>
+      <label><input type="checkbox" name="question" value="position" checked> Ask for position</label>
+    </fieldset>
+    <fieldset class="settings-group"><legend>Photo ID questions</legend>
+      <small>Only the photo is shown as a clue. Enable any of these independently of standard questions.</small>
+      <label><input type="checkbox" name="question" value="photo-name"> Photo → name</label>
+      <label><input type="checkbox" name="question" value="photo-position"> Photo → position</label>
+      <label><input type="checkbox" name="question" value="photo-number"> Photo → number</label>
+    </fieldset>
+    <fieldset class="settings-group"><legend>Answer formats</legend>
+      <label><input type="checkbox" name="format" value="mc" checked> Multiple choice</label>
+      <label><input type="checkbox" name="format" value="type" checked> Typed answers</label>
+      <small>Typed positions accept the full exact position or its abbreviation (e.g. QB, LT, WR1). Depth is not required. Names ignore capitalization and punctuation.</small>
+    </fieldset>
+    <div class="err" id="setupErr" role="alert"></div>
     <button class="btn-primary" id="startBtn">Start learning</button>
     <div class="legend">
       <span><span class="dot" style="background:var(--orange)"></span>Offense</span>
@@ -253,6 +283,8 @@
 
       <div class="feedback" id="feedback"></div>
       <div class="err" id="errMsg"></div>
+      <div id="photoActions" class="hidden"><button class="btn-ghost" id="retryPhoto">Retry photo</button><button class="btn-ghost" id="skipPhoto">Skip for now</button></div>
+      <button class="btn-ghost" id="settingsBtn">End session / settings</button>
     </div>
   </div>
 
@@ -425,8 +457,27 @@ let roundMissed = [];
 let current = null;
 let currentQuestionType = null;
 let awaitingAnswer = true;
+let enabledQuestions = [];
+let advanceTimer;
+const selectedValues = name => [...document.querySelectorAll('input[name="' + name + '"]:checked')].map(input => input.value);
 
 const el = id => document.getElementById(id);
+el("settingsBtn").addEventListener("click", () => {
+  clearTimeout(advanceTimer);
+  awaitingAnswer = false;
+  el("quizScreen").classList.add("hidden");
+  el("setupScreen").classList.remove("hidden");
+});
+el("retryPhoto").addEventListener("click", () => {
+  el("errMsg").textContent = "";
+  el("photoActions").classList.add("hidden");
+  renderAvatar(current, true);
+});
+el("skipPhoto").addEventListener("click", () => {
+  if(!awaitingAnswer) return;
+  awaitingAnswer = false;
+  nextQuestion();
+});
 
 el("startBtn").addEventListener("click", () => {
   const includeIR = el("includeIR").checked;
@@ -441,11 +492,27 @@ el("startBtn").addEventListener("click", () => {
   }
   el("setupErr").textContent = "";
 
+  const depths = selectedValues("depth");
+  const questions = selectedValues("question");
+  const formats = selectedValues("format");
+  if(!depths.length || !questions.length || !formats.length){
+    el("setupErr").textContent = "Select at least one depth, question type, and answer format.";
+    return;
+  }
+  enabledQuestions = formats.flatMap(format => questions.map(question => format + "-" + question));
+
   const statusFiltered = includeIR ? ROSTER : ROSTER.filter(p => p.st === "active");
-  const base = statusFiltered.filter(p => selectedUnits.includes(p.unit));
-  pool = base.map(p => ({...p, mastery:0}));
+  const base = statusFiltered.filter(p => selectedUnits.includes(p.unit) && depths.includes(p.depth));
+  if(!base.length){
+    el("setupErr").textContent = "No players match these filters. Try another depth or include reserve / injured players.";
+    return;
+  }
+  pool = base.map(p => ({...p, mastery:0, pending:shuffle(enabledQuestions)}));
+  roundNum = 1;
+  clearTimeout(advanceTimer);
   totalPlayers = pool.length;
   masteredTotal = 0;
+  updateProgress();
   el("totalCount").textContent = totalPlayers;
   el("setupScreen").classList.add("hidden");
   el("quizScreen").classList.remove("hidden");
@@ -465,7 +532,7 @@ function updateProgress(){
 
 let roundNum = 1;
 function startRound(){
-  const remaining = pool.filter(p => p.mastery < 4);
+  const remaining = pool.filter(p => p.pending.length);
   if(remaining.length === 0){
     finishAll();
     return;
@@ -492,19 +559,14 @@ function nextQuestion(){
   }
   current = roundQueue.shift();
   awaitingAnswer = true;
-  if(current.note){
+  const qtype = current.pending[0];
+  if(!qtype.includes("photo-") && !qtype.endsWith("name") && current.note){
     el("roleNote").textContent = current.note;
-  } else if(current.also && current.also.length){
+  } else if(!qtype.includes("photo-") && !qtype.endsWith("name") && current.also && current.also.length){
     el("roleNote").textContent = "Also on ESPN depth chart: " + current.also.join(" · ");
   }
-  const mastery = current.mastery;
-  let qtype;
-  if(mastery === 0) qtype = "mc-number";
-  else if(mastery === 1) qtype = "mc-position";
-  else if(mastery === 2) qtype = "mc-name";
-  else qtype = "type-number";
   currentQuestionType = qtype;
-  renderAvatar(current, qtype !== "mc-name");
+  renderAvatar(current, qtype.includes("photo-") || !qtype.endsWith("name"));
   renderQuestion(current, qtype);
 }
 
@@ -524,57 +586,91 @@ function renderAvatar(p, showPhoto = true){
   if(src){
     const img = document.createElement("img");
     img.src = src;
-    img.alt = p.n + " headshot";
+    img.alt = currentQuestionType && currentQuestionType.includes("photo-") && awaitingAnswer ? "Identify the pictured player" : p.n + " headshot";
     img.loading = "eager";
     img.referrerPolicy = "no-referrer";
-    img.addEventListener("load", () => a.classList.add("has-photo"));
-    img.addEventListener("error", () => { a.className = "avatar grp-" + grp; a.textContent = initials(p.n); });
+    img.addEventListener("load", () => { if(a.contains(img)) a.classList.add("has-photo"); });
+    img.addEventListener("error", () => {
+      if(!a.contains(img)) return;
+      a.className = "avatar grp-" + grp;
+      if(currentQuestionType.includes("photo-") && awaitingAnswer){
+        a.textContent = "?";
+        el("errMsg").textContent = "Photo unavailable. Check your connection, then retry or skip this question.";
+        el("photoActions").classList.remove("hidden");
+      } else a.textContent = initials(p.n);
+    });
     a.textContent = "";
     a.appendChild(img);
   }
 }
 
 function revealCurrentPlayer(){
-  if(currentQuestionType === "mc-name") renderAvatar(current, true);
+  if(currentQuestionType.endsWith("name")) renderAvatar(current, true);
 }
 
-function renderQuestion(p, qtype){
-  el("mcOptions").innerHTML = "";
-  el("typeArea").classList.add("hidden");
-  el("mcOptions").classList.remove("hidden");
-  el("mcOptions").classList.toggle("position-options", qtype === "mc-position");
-
-  if(qtype === "mc-number"){
-    el("qtag").textContent = "Jersey number";
-    el("promptText").innerHTML = "What number does <span class='hl'>" + p.n + "</span> (" + depthRole(p) + ") wear?";
-    const distractors = pickN(pool, 3, p).map(x=>x.num);
-    const options = shuffle([p.num, ...distractors]);
-    buildMC(options, opt => opt === p.num, opt => "#" + opt);
-  } else if(qtype === "mc-position"){
-    el("qtag").textContent = "Position";
-    el("promptText").innerHTML = "What position does <span class='hl'>#" + p.num + " " + p.n + "</span> play?";
-    const answer = depthRole(p);
-    const others = [...new Set(pool.filter(x=>x!==p).map(x=>depthRole(x)).filter(x=>x!==answer))];
-    const distractors = shuffle(others).slice(0,3);
-    const options = shuffle([answer, ...distractors]);
-    buildMC(options, opt => opt === answer, opt => opt);
-  } else if(qtype === "mc-name"){
-    el("qtag").textContent = "Name";
-    el("promptText").innerHTML = "Who wears <span class='hl'>#" + p.num + "</span> and is <span class='hl'>" + depthRole(p) + "</span>?";
-    const samePos = pool.filter(x => x.pos === p.pos && x !== p);
-    const distractorPool = samePos.length >= 3 ? samePos : pool;
-    const distractors = pickN(distractorPool, 3, p).map(x=>x.n);
-    const options = shuffle([p.n, ...distractors]);
-    buildMC(options, opt => opt === p.n, opt => opt);
-  } else {
-    el("qtag").textContent = "Type it in";
-    el("promptText").innerHTML = "Type the jersey number for <span class='hl'>" + p.n + "</span> (" + depthRole(p) + ")";
-    el("mcOptions").classList.add("hidden");
-    el("typeArea").classList.remove("hidden");
-    el("typeInput").value = "";
-    el("typeInput").disabled = false;
-    setTimeout(()=>el("typeInput").focus(), 50);
+function questionSubject(){ return currentQuestionType.split("-").pop(); }
+function answerFor(p, subject){ return subject === "number" ? p.num : subject === "name" ? p.n : p.pos; }
+function normalizeAnswer(value){ return String(value).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+const positionAliases = {
+  "Quarterback":["QB"], "Running Back":["RB"], "Tight End":["TE"],
+  "Wide Receiver 1":["WR1"], "Wide Receiver 2":["WR2"], "Wide Receiver 3":["WR3"],
+  "Left Tackle":["LT"], "Right Tackle":["RT"], "Left Guard":["LG"], "Right Guard":["RG"], "Center":["C"],
+  "Left Defensive End":["LDE"], "Right Defensive End":["RDE"],
+  "Left Defensive Tackle":["LDT"], "Right Defensive Tackle":["RDT"],
+  "Weakside Linebacker":["WLB"], "Middle Linebacker":["MLB"], "Strongside Linebacker":["SLB"],
+  "Left Cornerback":["LCB"], "Right Cornerback":["RCB"], "Nickel Back":["NB","Nickelback"],
+  "Free Safety":["FS"], "Strong Safety":["SS"], "Place Kicker":["K","PK","Kicker","Placekicker"],
+  "Punter":["P"], "Long Snapper":["LS"]
+};
+function isTypedCorrect(value, p, subject){
+  if(subject === "number") return /^#?\d+$/.test(value) && Number(value.replace("#","")) === p.num;
+  const normalized = normalizeAnswer(value);
+  if(subject === "name"){
+    const withoutSuffix = name => name.replace(/\s+(II|III|IV|Jr\.?|Sr\.?)$/i, "");
+    return normalized === normalizeAnswer(p.n) || normalized === normalizeAnswer(withoutSuffix(p.n));
   }
+  return [p.pos, depthRole(p), ...(positionAliases[p.pos] || [])].some(alias => normalized === normalizeAnswer(alias));
+}
+function renderQuestion(p, qtype){
+  const subject = qtype.split("-").pop();
+  const photoOnly = qtype.includes("photo-");
+  const typed = qtype.startsWith("type-");
+  el("photoActions").classList.add("hidden");
+  el("mcOptions").innerHTML = "";
+  el("mcOptions").classList.toggle("hidden", typed);
+  el("typeArea").classList.toggle("hidden", !typed);
+  el("mcOptions").classList.toggle("position-options", subject === "position");
+  el("qtag").textContent = (photoOnly ? "Photo ID · " : "") + subject + (typed ? " · Type it in" : " · Multiple choice");
+  if(photoOnly){
+    el("promptText").textContent = subject === "name" ? "Who is this player?" : subject === "number" ? "What jersey number does this player wear?" : "What exact position does this player play?";
+    el("roleNote").textContent = "";
+  } else if(subject === "name"){
+    el("promptText").textContent = "Who wears #" + p.num + " and is " + depthRole(p) + "?";
+  } else if(subject === "number"){
+    el("promptText").textContent = "What number does " + p.n + " (" + depthRole(p) + ") wear?";
+  } else {
+    el("promptText").textContent = "What exact position does #" + p.num + " " + p.n + " play?";
+    el("roleNote").textContent = "Give the exact position; depth is not required.";
+  }
+  if(typed){
+    const input = el("typeInput");
+    input.value = "";
+    input.disabled = false;
+    input.inputMode = subject === "number" ? "numeric" : "text";
+    input.placeholder = subject === "number" ? "Jersey number" : subject === "name" ? "Full player name" : "Exact position or abbreviation";
+    input.setAttribute("aria-label", input.placeholder);
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.focus();
+    return;
+  }
+  const answer = answerFor(p, subject);
+  let others = [...new Set(pool.map(player => answerFor(player, subject)))].filter(value => value !== answer);
+  // Use roster-only distractors if a narrow pool has too few distinct answers.
+  // The question's target player still always comes from the selected pool.
+  if(others.length < 3) others = [...new Set([...others, ...ROSTER.map(player => answerFor(player, subject))])].filter(value => value !== answer);
+  const options = shuffle([answer, ...shuffle(others).slice(0,3)]);
+  buildMC(options, value => value === answer, value => subject === "number" ? "#" + value : value);
 }
 
 function buildMC(options, isCorrect, label){
@@ -612,17 +708,18 @@ function submitTypeAnswer(){
   if(!awaitingAnswer) return;
   const val = el("typeInput").value.trim();
   if(val === ""){
-    el("errMsg").textContent = "Enter a number first";
+    el("errMsg").textContent = "Enter an answer first";
     return;
   }
   el("errMsg").textContent = "";
   awaitingAnswer = false;
   el("typeInput").disabled = true;
-  const correct = parseInt(val, 10) === current.num;
+  revealCurrentPlayer();
+  const correct = isTypedCorrect(val, current, questionSubject());
   if(correct){
     onCorrect();
   } else {
-    el("feedback").textContent = "Not quite — it's #" + current.num;
+    el("feedback").textContent = "Not quite — it's " + answerFor(current, questionSubject());
     el("feedback").className = "feedback bad";
     onWrong();
   }
@@ -630,22 +727,25 @@ function submitTypeAnswer(){
 
 function onCorrect(){
   current.mastery += 1;
+  current.pending.shift();
   el("feedback").textContent = "Correct";
   el("feedback").className = "feedback good";
   roundCorrect += 1;
-  if(current.mastery >= 4){
+  if(current.pending.length === 0){
     masteredTotal += 1;
     updateProgress();
   } else {
     roundQueue.push(current);
   }
-  setTimeout(advance, 700);
+  advanceTimer = setTimeout(advance, 1800);
 }
 function onWrong(){
-  current.mastery = Math.max(0, current.mastery - 1);
+  current.pending.push(current.pending.shift());
+  el("feedback").textContent = "Not quite — it's " + answerFor(current, questionSubject());
+  el("feedback").className = "feedback bad";
   roundMissed.push(current.n + " — #" + current.num + " · " + depthRole(current));
   roundQueue.push(current);
-  setTimeout(advance, 1100);
+  advanceTimer = setTimeout(advance, 2800);
 }
 
 function advance(){
@@ -656,7 +756,7 @@ function endRound(){
   el("quizScreen").classList.add("hidden");
   el("roundEndScreen").classList.remove("hidden");
   el("roundScore").textContent = roundCorrect + "/" + (roundCorrect + roundMissed.length);
-  const remaining = pool.filter(p => p.mastery < 4).length;
+  const remaining = pool.filter(p => p.pending.length).length;
   el("roundSummary").textContent = remaining + " player" + (remaining===1?"":"s") + " still to master.";
   roundNum += 1;
 }
@@ -670,7 +770,7 @@ function finishAll(){
   el("quizScreen").classList.add("hidden");
   el("roundEndScreen").classList.add("hidden");
   el("doneScreen").classList.remove("hidden");
-  el("doneSummary").textContent = "You've locked in the name, number, exact position and depth string for all " + totalPlayers + " players.";
+  el("doneSummary").textContent = "You've completed every selected question type and answer format for all " + totalPlayers + " players.";
   roundNum = 1;
 }
 </script>
