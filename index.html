@@ -276,7 +276,8 @@
       <span class="stat">Mastered <b id="masteredCount">0</b>/<span id="totalCount">0</span></span>
       <span class="stat" id="roundLabel">Round 1</span>
     </div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="stat" id="questionProgress" style="margin-bottom:8px;">Questions completed: 0/0</div>
+    <div class="progress-track" id="questionProgressBar" role="progressbar" aria-label="Questions completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
 
     <div class="card" id="questionCard">
       <div class="avatar" id="avatar"></div>
@@ -558,7 +559,13 @@ el("restartBtn").addEventListener("click", () => {
 
 function updateProgress(){
   el("masteredCount").textContent = masteredTotal;
-  const pct = totalPlayers ? Math.round((masteredTotal/totalPlayers)*100) : 0;
+  const total = pool.length * enabledQuestions.length;
+  const pending = pool.reduce((sum, player) => sum + player.pending.length, 0);
+  const completed = total - pending;
+  const pct = total ? (completed / total) * 100 : 0;
+  el("questionProgress").textContent = "Questions completed: " + completed + "/" + total;
+  el("questionProgressBar").setAttribute("aria-valuenow", pct);
+  el("questionProgressBar").setAttribute("aria-valuetext", completed + " of " + total + " questions completed");
   el("progressFill").style.width = pct + "%";
 }
 
@@ -766,10 +773,10 @@ function onCorrect(){
   roundCorrect += 1;
   if(current.pending.length === 0){
     masteredTotal += 1;
-    updateProgress();
   } else {
     roundQueue.push(current);
   }
+  updateProgress();
   advanceTimer = setTimeout(advance, 1800);
 }
 function onWrong(){
