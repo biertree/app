@@ -49,6 +49,19 @@
   .cheat-detail{color:var(--text-dim);font-size:14px;line-height:1.5;margin-top:3px;}
   .cheat-depth{font-family:'Oswald',sans-serif;font-size:28px;margin:28px 0 10px;}
   .cheat-unit{font-size:16px;color:var(--text-dim);margin:18px 0 10px;}
+  .cheat-table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch;}
+  .cheat-table{width:100%;min-width:1150px;border-collapse:separate;border-spacing:0;table-layout:fixed;}
+  .cheat-table caption{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+  .cheat-table th,.cheat-table td{padding:14px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);}
+  .cheat-table thead th{background:var(--card-2);font-size:15px;color:var(--orange-dim);}
+  .cheat-table th:first-child{position:sticky;left:0;width:135px;background:var(--card);z-index:1;border-right:1px solid var(--line);font-size:14px;}
+  .cheat-table tbody tr:nth-child(even) td{background:rgba(255,255,255,.025);}
+  .cheat-table .cheat-player{display:block;padding:0;border:0;border-radius:0;background:transparent;margin-bottom:12px;}
+  .cheat-table .cheat-photo{width:60px;height:60px;margin-bottom:8px;}
+  .cheat-table .cheat-name{font-size:15px;}
+  .cheat-table .cheat-detail{font-size:12px;}
+  .cheat-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .cheat-nav a{padding:12px;background:var(--card-2);border-radius:8px;color:var(--text);text-decoration:none;}
   .settings-group{border:1px solid var(--line);border-radius:12px;margin:22px 0;padding:16px;min-width:0;}
   .settings-group legend{font-weight:600;color:var(--orange-dim);padding:0 6px;}
   .settings-group label{display:flex;align-items:center;gap:12px;min-height:44px;line-height:1.4;}
@@ -198,12 +211,12 @@
 <audio id="incorrectSound" src="./Incorrect.mp3" preload="auto"></audio>
 <div class="wrap">
   <h1>Chicago Bears — 2026 Roster</h1>
-  <p class="sub">Learn mode · name, number, exact position and depth string</p>
+  <p class="sub">Learn mode · name, number, official position and depth</p>
 
   <div id="setupScreen" class="setup-card">
     <button class="btn-ghost" id="openCheatSheet" style="margin:0 0 22px;">Depth chart cheat sheet</button>
     <p>Choose your players, question types, and answer formats. Complete every enabled question and format for each player to master them. Missed questions return for another try.</p>
-    <p style="margin-bottom:14px;">Player headshots are loaded from the official Chicago Bears roster page. Positions and depth strings use ESPN's Bears depth chart (Starter, 2nd, 3rd, 4th). If a photo can't load, the colored initials badge appears as a fallback.</p>
+    <p style="margin-bottom:14px;">Study the <a href="https://www.chicagobears.com/team/depth-chart" target="_blank" rel="noopener" style="color:var(--orange-dim);">official Bears depth chart</a> dated September 8, 2026. Verified September 18, 2026; this saved snapshot does not update automatically. Numbers verified against the <a href="https://www.chicagobears.com/team/players-roster/" target="_blank" rel="noopener" style="color:var(--orange-dim);">official roster</a>. Only players listed on the depth chart are included.</p>
     <p style="margin-bottom:14px;">Choose which units to include:</p>
     <div class="toggle-row">
       <div>
@@ -228,30 +241,21 @@
     <div class="toggle-row">
       <div>
         <span>Special teams</span>
-        <small>Include kickers, punters, and long snapper</small>
+        <small>Include kicking, holding, snapping, and return roles</small>
       </div>
       <label class="switch">
         <input type="checkbox" id="includeST" checked>
         <span class="slider-el"></span>
       </label>
     </div>
-    <div class="toggle-row">
-      <div>
-        <span>Include reserve / injured players</span>
-        <small>Adds 9 players currently on IR or PUP</small>
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="includeIR">
-        <span class="slider-el"></span>
-      </label>
-    </div>
+
     <fieldset class="settings-group"><legend>Depth chart</legend>
-      <small>Filters each player's primary listed depth. Reserve status still uses the toggle above.</small>
+      <small>Includes players with any official role matching the selected unit and depth. Each player is counted once.</small>
       <label><input type="checkbox" name="depth" value="Starter" checked> Starters</label>
       <label><input type="checkbox" name="depth" value="2nd" checked> 2nd string</label>
       <label><input type="checkbox" name="depth" value="3rd" checked> 3rd string</label>
-      <label><input type="checkbox" name="depth" value="4th" checked> 4th string</label>
-      <label><input type="checkbox" name="depth" value="Not listed" checked> Unlisted depth</label>
+      <small>The official chart currently lists only 1st, 2nd, and 3rd string. No 4th-string or reserve depths are inferred.</small>
+
     </fieldset>
     <fieldset class="settings-group"><legend>Standard questions</legend>
       <label><input type="checkbox" name="question" value="number" checked> Ask for number</label>
@@ -267,7 +271,7 @@
     <fieldset class="settings-group"><legend>Answer formats</legend>
       <label><input type="checkbox" name="format" value="mc" checked> Multiple choice</label>
       <label><input type="checkbox" name="format" value="type" checked> Typed answers</label>
-      <small>Typed positions accept the full exact position or its abbreviation (e.g. QB, LT, WR1). Depth is not required. Names ignore capitalization and punctuation.</small>
+      <small>Typed positions accept official labels or abbreviations (e.g. QB, WR, DL, LB, S). For a player with multiple roles, any official role in the named unit is accepted. Names ignore capitalization and punctuation.</small>
     </fieldset>
     <fieldset class="settings-group"><legend>Sound</legend>
       <label><input type="checkbox" id="soundEnabled" checked> Play correct / incorrect answer sounds</label>
@@ -284,7 +288,8 @@
   <div id="cheatScreen" class="hidden">
     <button class="btn-ghost" id="closeCheatSheet">← Back to quiz settings</button>
     <h2 class="cheat-depth" id="cheatHeading" tabindex="-1">Depth chart cheat sheet</h2>
-    <p class="sub">Full roster from this quiz, grouped by primary depth and unit. Includes reserve / injured players.</p>
+    <p class="sub">Official chart dated September 8, 2026; checked September 18, 2026. Position rows and depth order match the team, including separate TE, WR, and defensive rows. Swipe sideways for all columns.</p>
+    <nav class="cheat-nav" aria-label="Depth chart units"><a href="#cheat-unit-off">Offense</a><a href="#cheat-unit-def">Defense</a><a href="#cheat-unit-st">Special Teams</a></nav>
     <div id="cheatContent"></div>
     <button class="btn-ghost" id="closeCheatSheetBottom">← Back to quiz settings</button>
   </div>
@@ -338,69 +343,894 @@
 </div>
 
 <script>
+// Official Bears depth chart dated 2026-09-08; checked 2026-09-18.
+// Numbers verified against the official Bears roster. No inferred depth assignments.
+const OFFICIAL_ROWS = [["off","WR",[15,14,81]],["off","LT",[70,75]],["off","LG",[62,74]],["off","C",[67,54]],["off","RG",[73,65]],["off","RT",[58,79]],["off","TE",[85,87]],["off","TE",[84]],["off","WR",[10,9]],["off","QB",[18,17,11]],["off","RB",[4,25,23]],["def","DL",[98,94,59]],["def","DL",[50,90,97]],["def","DL",[93,96,91]],["def","DL",[55,92]],["def","LB",[53,48,49]],["def","LB",[12,57]],["def","S",[31,22]],["def","S",[32,38]],["def","DB",[21,24]],["def","CB",[29,20]],["def","CB",[1,39]],["st","K",[8]],["st","P",[19]],["st","KO",[8]],["st","H",[19]],["st","LS",[45]],["st","KR",[14,81]],["st","PR",[14,81]]];
 const ROSTER = [
-  {n:"Tyson Bagent",num:17,pos:"Quarterback",depth:"2nd",unit:"off",st:"active"},
-  {n:"Theo Benedet",num:79,pos:"Left Tackle",depth:"3rd",unit:"off",st:"active",also:["2nd — Right Tackle"]},
-  {n:"Josh Blackwell",num:39,pos:"Left Cornerback",depth:"2nd",unit:"def",st:"active",also:["3rd — Punt Returner","3rd — Kick Returner"]},
-  {n:"Austin Booker",num:94,pos:"Left Defensive End",depth:"2nd",unit:"def",st:"active"},
-  {n:"Garrett Bradbury",num:67,pos:"Center",depth:"Starter",unit:"off",st:"active"},
-  {n:"Luther Burden III",num:10,pos:"Wide Receiver 2",depth:"Starter",unit:"off",st:"active"},
-  {n:"Devin Bush",num:12,pos:"Weakside Linebacker",depth:"Starter",unit:"def",st:"active"},
-  {n:"T.J. Edwards",num:53,pos:"Middle Linebacker",depth:"Starter",unit:"def",st:"active"},
-  {n:"Keyshaun Elliott",num:49,pos:"Middle Linebacker",depth:"2nd",unit:"def",st:"active"},
-  {n:"Neville Gallimore",num:90,pos:"Left Defensive Tackle",depth:"2nd",unit:"def",st:"active"},
-  {n:"Beau Gardner",num:45,pos:"Long Snapper",depth:"Starter",unit:"st",st:"active"},
-  {n:"Daniel Hardy",num:92,pos:"Right Defensive End",depth:"2nd",unit:"def",st:"active"},
-  {n:"Elijah Hicks",num:22,pos:"Strong Safety",depth:"2nd",unit:"def",st:"active"},
-  {n:"D'Marco Jackson",num:48,pos:"Strongside Linebacker",depth:"Starter",unit:"def",st:"active"},
-  {n:"Jonah Jackson",num:73,pos:"Right Guard",depth:"Starter",unit:"off",st:"active"},
-  {n:"Grady Jarrett",num:50,pos:"Left Defensive Tackle",depth:"Starter",unit:"def",st:"active"},
-  {n:"Jaylon Johnson",num:1,pos:"Left Cornerback",depth:"Starter",unit:"def",st:"active"},
-  {n:"Roschon Johnson",num:23,pos:"Running Back",depth:"3rd",unit:"off",st:"active"},
-  {n:"Braxton Jones",num:70,pos:"Left Tackle",depth:"Starter",unit:"off",st:"active"},
-  {n:"Logan Jones",num:54,pos:"Center",depth:"2nd",unit:"off",st:"active"},
-  {n:"Case Keenum",num:11,pos:"Quarterback",depth:"3rd",unit:"off",st:"active"},
-  {n:"Cole Kmet",num:85,pos:"Tight End",depth:"2nd",unit:"off",st:"active"},
-  {n:"Jamree Kromah",num:59,pos:"Left Defensive End",depth:"3rd",unit:"def",st:"active"},
-  {n:"Cam Lewis",num:21,pos:"Nickel Back",depth:"Starter",unit:"def",st:"active"},
-  {n:"Colston Loveland",num:84,pos:"Tight End",depth:"Starter",unit:"off",st:"active"},
-  {n:"Jayden Loving",num:91,pos:"Right Defensive Tackle",depth:"3rd",unit:"def",st:"active"},
-  {n:"James Lynch",num:97,pos:"Left Defensive Tackle",depth:"3rd",unit:"def",st:"active"},
-  {n:"Jordan McFadden",num:74,pos:"Left Guard",depth:"2nd",unit:"off",st:"active"},
-  {n:"Kyle Monangai",num:25,pos:"Running Back",depth:"2nd",unit:"off",st:"active"},
-  {n:"Malik Muhammad II",num:24,pos:"Nickel Back",depth:"2nd",unit:"def",st:"active"},
-  {n:"Luke Newman",num:65,pos:"Right Guard",depth:"2nd",unit:"off",st:"active"},
-  {n:"Dayo Odeyingbo",num:55,pos:"Right Defensive End",depth:"Starter",unit:"def",st:"active"},
-  {n:"Rome Odunze",num:15,pos:"Wide Receiver 1",depth:"Starter",unit:"off",st:"active"},
-  {n:"Clark Phillips III",num:20,pos:"Right Cornerback",depth:"2nd",unit:"def",st:"active"},
-  {n:"Kalif Raymond",num:14,pos:"Wide Receiver 3",depth:"Starter",unit:"off",st:"active",also:["Starter — Punt Returner","Starter — Kick Returner"]},
-  {n:"Sam Roush",num:87,pos:"Tight End",depth:"3rd",unit:"off",st:"active"},
-  {n:"Jack Sanborn",num:57,pos:"Strongside Linebacker",depth:"2nd",unit:"def",st:"active"},
-  {n:"Cairo Santos",num:8,pos:"Place Kicker",depth:"Starter",unit:"st",st:"active"},
-  {n:"Tyrique Stevenson",num:29,pos:"Right Cornerback",depth:"Starter",unit:"def",st:"active"},
-  {n:"Kentavius Street",num:93,pos:"Right Defensive Tackle",depth:"Starter",unit:"def",st:"active"},
-  {n:"Montez Sweat",num:98,pos:"Left Defensive End",depth:"Starter",unit:"def",st:"active"},
-  {n:"D'Andre Swift",num:4,pos:"Running Back",depth:"Starter",unit:"off",st:"active"},
-  {n:"Tory Taylor",num:19,pos:"Punter",depth:"Starter",unit:"st",st:"active",also:["Starter — Holder"]},
-  {n:"Dillon Thieneman",num:31,pos:"Strong Safety",depth:"Starter",unit:"def",st:"active"},
-  {n:"Skyler Thomas",num:38,pos:"Free Safety",depth:"2nd",unit:"def",st:"active"},
-  {n:"Zavion Thomas",num:81,pos:"Wide Receiver 1",depth:"2nd",unit:"off",st:"active",also:["2nd — Punt Returner","2nd — Kick Returner"]},
-  {n:"Joe Thuney",num:62,pos:"Left Guard",depth:"Starter",unit:"off",st:"active"},
-  {n:"Ozzy Trapilo",num:75,pos:"Left Tackle",depth:"2nd",unit:"off",st:"active"},
-  {n:"Jordan van den Berg",num:96,pos:"Right Defensive Tackle",depth:"2nd",unit:"def",st:"active"},
-  {n:"Jahdae Walker",num:9,pos:"Wide Receiver 2",depth:"2nd",unit:"off",st:"active"},
-  {n:"Caleb Williams",num:18,pos:"Quarterback",depth:"Starter",unit:"off",st:"active"},
-  {n:"Xavier Woods",num:32,pos:"Free Safety",depth:"Starter",unit:"def",st:"active"},
-  {n:"Darnell Wright",num:58,pos:"Right Tackle",depth:"Starter",unit:"off",st:"active"},
-  {n:"Brittain Brown",num:38,pos:"Running Back",depth:"4th",unit:"off",st:"ir"},
-  {n:"Coby Bryant",num:2,pos:"Free Safety",depth:"3rd",unit:"def",st:"ir"},
-  {n:"Tony Fields II",num:43,pos:"Weakside Linebacker",depth:"2nd",unit:"def",st:"ir"},
-  {n:"Nikola Kalinic",num:86,pos:"Tight End",depth:"4th",unit:"off",st:"ir"},
-  {n:"Hayden Large",num:43,pos:"Tight End",depth:"Not listed",unit:"off",st:"ir",note:"Not listed on ESPN's current Bears depth chart"},
-  {n:"Nephi Sewell",num:46,pos:"Weakside Linebacker",depth:"3rd",unit:"def",st:"ir"},
-  {n:"Kyler Gordon",num:6,pos:"Nickel Back",depth:"3rd",unit:"def",st:"pup"},
-  {n:"Noah Sewell",num:44,pos:"Middle Linebacker",depth:"3rd",unit:"def",st:"pup"},
-  {n:"Shemar Turner",num:95,pos:"Right Defensive Tackle",depth:"4th",unit:"def",st:"pup"}
+  {
+    "n": "Rome Odunze",
+    "num": 15,
+    "pos": "Wide Receiver",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "WR",
+        "pos": "Wide Receiver",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Kalif Raymond",
+    "num": 14,
+    "pos": "Wide Receiver",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "WR",
+        "pos": "Wide Receiver",
+        "depth": "2nd"
+      },
+      {
+        "unit": "st",
+        "code": "KR",
+        "pos": "Kick Returner",
+        "depth": "Starter"
+      },
+      {
+        "unit": "st",
+        "code": "PR",
+        "pos": "Punt Returner",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Zavion Thomas",
+    "num": 81,
+    "pos": "Wide Receiver",
+    "depth": "3rd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "WR",
+        "pos": "Wide Receiver",
+        "depth": "3rd"
+      },
+      {
+        "unit": "st",
+        "code": "KR",
+        "pos": "Kick Returner",
+        "depth": "2nd"
+      },
+      {
+        "unit": "st",
+        "code": "PR",
+        "pos": "Punt Returner",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Braxton Jones",
+    "num": 70,
+    "pos": "Left Tackle",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "LT",
+        "pos": "Left Tackle",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Ozzy Trapilo",
+    "num": 75,
+    "pos": "Left Tackle",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "LT",
+        "pos": "Left Tackle",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Joe Thuney",
+    "num": 62,
+    "pos": "Left Guard",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "LG",
+        "pos": "Left Guard",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Jordan McFadden",
+    "num": 74,
+    "pos": "Left Guard",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "LG",
+        "pos": "Left Guard",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Garrett Bradbury",
+    "num": 67,
+    "pos": "Center",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "C",
+        "pos": "Center",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Logan Jones",
+    "num": 54,
+    "pos": "Center",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "C",
+        "pos": "Center",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Jonah Jackson",
+    "num": 73,
+    "pos": "Right Guard",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RG",
+        "pos": "Right Guard",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Luke Newman",
+    "num": 65,
+    "pos": "Right Guard",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RG",
+        "pos": "Right Guard",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Darnell Wright",
+    "num": 58,
+    "pos": "Right Tackle",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RT",
+        "pos": "Right Tackle",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Theo Benedet",
+    "num": 79,
+    "pos": "Right Tackle",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RT",
+        "pos": "Right Tackle",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Cole Kmet",
+    "num": 85,
+    "pos": "Tight End",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "TE",
+        "pos": "Tight End",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Sam Roush",
+    "num": 87,
+    "pos": "Tight End",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "TE",
+        "pos": "Tight End",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Colston Loveland",
+    "num": 84,
+    "pos": "Tight End",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "TE",
+        "pos": "Tight End",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Luther Burden III",
+    "num": 10,
+    "pos": "Wide Receiver",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "WR",
+        "pos": "Wide Receiver",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Jahdae Walker",
+    "num": 9,
+    "pos": "Wide Receiver",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "WR",
+        "pos": "Wide Receiver",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Caleb Williams",
+    "num": 18,
+    "pos": "Quarterback",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "QB",
+        "pos": "Quarterback",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Tyson Bagent",
+    "num": 17,
+    "pos": "Quarterback",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "QB",
+        "pos": "Quarterback",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Case Keenum",
+    "num": 11,
+    "pos": "Quarterback",
+    "depth": "3rd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "QB",
+        "pos": "Quarterback",
+        "depth": "3rd"
+      }
+    ]
+  },
+  {
+    "n": "D'Andre Swift",
+    "num": 4,
+    "pos": "Running Back",
+    "depth": "Starter",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RB",
+        "pos": "Running Back",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Kyle Monangai",
+    "num": 25,
+    "pos": "Running Back",
+    "depth": "2nd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RB",
+        "pos": "Running Back",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Roschon Johnson",
+    "num": 23,
+    "pos": "Running Back",
+    "depth": "3rd",
+    "unit": "off",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "off",
+        "code": "RB",
+        "pos": "Running Back",
+        "depth": "3rd"
+      }
+    ]
+  },
+  {
+    "n": "Montez Sweat",
+    "num": 98,
+    "pos": "Defensive Line",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Austin Booker",
+    "num": 94,
+    "pos": "Defensive Line",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Jamree Kromah",
+    "num": 59,
+    "pos": "Defensive Line",
+    "depth": "3rd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "3rd"
+      }
+    ]
+  },
+  {
+    "n": "Grady Jarrett",
+    "num": 50,
+    "pos": "Defensive Line",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Neville Gallimore",
+    "num": 90,
+    "pos": "Defensive Line",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "James Lynch",
+    "num": 97,
+    "pos": "Defensive Line",
+    "depth": "3rd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "3rd"
+      }
+    ]
+  },
+  {
+    "n": "Kentavius Street",
+    "num": 93,
+    "pos": "Defensive Line",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Jordan van den Berg",
+    "num": 96,
+    "pos": "Defensive Line",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Jayden Loving",
+    "num": 91,
+    "pos": "Defensive Line",
+    "depth": "3rd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "3rd"
+      }
+    ]
+  },
+  {
+    "n": "Dayo Odeyingbo",
+    "num": 55,
+    "pos": "Defensive Line",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Daniel Hardy",
+    "num": 92,
+    "pos": "Defensive Line",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DL",
+        "pos": "Defensive Line",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "T.J. Edwards",
+    "num": 53,
+    "pos": "Linebacker",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "LB",
+        "pos": "Linebacker",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "D'Marco Jackson",
+    "num": 48,
+    "pos": "Linebacker",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "LB",
+        "pos": "Linebacker",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Keyshaun Elliott",
+    "num": 49,
+    "pos": "Linebacker",
+    "depth": "3rd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "LB",
+        "pos": "Linebacker",
+        "depth": "3rd"
+      }
+    ]
+  },
+  {
+    "n": "Devin Bush",
+    "num": 12,
+    "pos": "Linebacker",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "LB",
+        "pos": "Linebacker",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Jack Sanborn",
+    "num": 57,
+    "pos": "Linebacker",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "LB",
+        "pos": "Linebacker",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Dillon Thieneman",
+    "num": 31,
+    "pos": "Safety",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "S",
+        "pos": "Safety",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Elijah Hicks",
+    "num": 22,
+    "pos": "Safety",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "S",
+        "pos": "Safety",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Xavier Woods",
+    "num": 32,
+    "pos": "Safety",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "S",
+        "pos": "Safety",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Skyler Thomas",
+    "num": 38,
+    "pos": "Safety",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "S",
+        "pos": "Safety",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Cam Lewis",
+    "num": 21,
+    "pos": "Defensive Back",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DB",
+        "pos": "Defensive Back",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Malik Muhammad II",
+    "num": 24,
+    "pos": "Defensive Back",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "DB",
+        "pos": "Defensive Back",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Tyrique Stevenson Sr.",
+    "num": 29,
+    "pos": "Cornerback",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "CB",
+        "pos": "Cornerback",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Clark Phillips III",
+    "num": 20,
+    "pos": "Cornerback",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "CB",
+        "pos": "Cornerback",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Jaylon Johnson",
+    "num": 1,
+    "pos": "Cornerback",
+    "depth": "Starter",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "CB",
+        "pos": "Cornerback",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Josh Blackwell",
+    "num": 39,
+    "pos": "Cornerback",
+    "depth": "2nd",
+    "unit": "def",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "def",
+        "code": "CB",
+        "pos": "Cornerback",
+        "depth": "2nd"
+      }
+    ]
+  },
+  {
+    "n": "Cairo Santos",
+    "num": 8,
+    "pos": "Kicker",
+    "depth": "Starter",
+    "unit": "st",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "st",
+        "code": "K",
+        "pos": "Kicker",
+        "depth": "Starter"
+      },
+      {
+        "unit": "st",
+        "code": "KO",
+        "pos": "Kickoff Specialist",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Tory Taylor",
+    "num": 19,
+    "pos": "Punter",
+    "depth": "Starter",
+    "unit": "st",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "st",
+        "code": "P",
+        "pos": "Punter",
+        "depth": "Starter"
+      },
+      {
+        "unit": "st",
+        "code": "H",
+        "pos": "Holder",
+        "depth": "Starter"
+      }
+    ]
+  },
+  {
+    "n": "Beau Gardner",
+    "num": 45,
+    "pos": "Long Snapper",
+    "depth": "Starter",
+    "unit": "st",
+    "st": "active",
+    "roles": [
+      {
+        "unit": "st",
+        "code": "LS",
+        "pos": "Long Snapper",
+        "depth": "Starter"
+      }
+    ]
+  }
 ];
 const HEADSHOTS = {
   "Tyson Bagent": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/vvgl3mwrlkvzkpd5hedw.jpg",
@@ -441,7 +1271,7 @@ const HEADSHOTS = {
   "Sam Roush": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1778215014/bears/odvskyut2faoqek0rgfb.jpg",
   "Jack Sanborn": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715704814/bears/qkcgxb1jpxyxuzgbxcq8.jpg",
   "Cairo Santos": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715705379/bears/c4akuxuichat7twcidsq.jpg",
-  "Tyrique Stevenson": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748532306/bears/vkayynx5h2mkta2ddqqt.jpg",
+  "Tyrique Stevenson Sr.": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1748532306/bears/vkayynx5h2mkta2ddqqt.jpg",
   "Kentavius Street": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/tlofal2nitjelnhbdedx.jpg",
   "Montez Sweat": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/bears/d4zm9vmyz4yuk8dndacr.jpg",
   "D'Andre Swift": "https://static.clubs.nfl.com/image/upload/w_512,h_512,c_fill,g_face,q_auto:best,f_auto/v1715702824/bears/vofadqdu8np6zfll6i9d.jpg",
@@ -496,27 +1326,54 @@ let cheatSheetBuilt = false;
 function buildCheatSheet(){
   if(cheatSheetBuilt) return;
   const content = el("cheatContent");
-  const units = {off:"Offense",def:"Defense",st:"Special teams"};
-  const depths = ["Starter","2nd","3rd","4th","Not listed"];
-  const labels = {Starter:"Starters","2nd":"2nd string","3rd":"3rd string","4th":"4th string","Not listed":"Unlisted depth"};
-  for(const depth of depths){
-    const players = ROSTER.filter(p => p.depth === depth);
-    if(!players.length) continue;
+  const units = {off:"Offense",def:"Defense",st:"Special Teams"};
+  const depths = ["Starter","2nd","3rd","Other"];
+  const labels = ["Position","1st String","2nd String","3rd String","Other"];
+  for(const [unit,label] of Object.entries(units)){
     const section = document.createElement("section");
+    section.id = "cheat-unit-" + unit;
     const heading = document.createElement("h3");
     heading.className = "cheat-depth";
-    heading.textContent = labels[depth];
+    heading.textContent = label;
     section.appendChild(heading);
-    for(const [unit, label] of Object.entries(units)){
-      const members = players.filter(p => p.unit === unit).sort((a,b) => a.pos.localeCompare(b.pos) || a.num - b.num);
-      if(!members.length) continue;
-      const unitHeading = document.createElement("h4");
-      unitHeading.className = "cheat-unit";
-      unitHeading.textContent = label;
-      section.appendChild(unitHeading);
-      const grid = document.createElement("div");
-      grid.className = "cheat-grid";
-      for(const p of members){
+    const scroll = document.createElement("div");
+    scroll.className = "cheat-table-scroll";
+    scroll.tabIndex = 0;
+    scroll.setAttribute("role","region");
+    scroll.setAttribute("aria-label",label + " depth chart; scroll horizontally for all strings");
+    const table = document.createElement("table");
+    table.className = "cheat-table";
+    const caption = document.createElement("caption");
+    caption.textContent = label;
+    table.appendChild(caption);
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    labels.forEach(label => {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    const body = document.createElement("tbody");
+    for(const [,code,numbers] of OFFICIAL_ROWS.filter(row => row[0] === unit)){
+      const players = numbers.map((num,index) => {
+        const p = ROSTER.find(player => player.num === num);
+        const role = p.roles.find(role => role.unit === unit && role.code === code && role.depth === depths[index]);
+        return {...p,...role};
+      });
+      const position = code;
+      const row = document.createElement("tr");
+      const th = document.createElement("th");
+      th.scope = "row";
+      th.textContent = position;
+      row.appendChild(th);
+      for(const depth of depths){
+        const grid = document.createElement("td");
+        const members = players.filter(p => p.depth === depth);
+        if(!members.length) grid.textContent = "—";
+        for(const p of members){
         const card = document.createElement("article");
         card.className = "cheat-player";
         const photo = document.createElement("div");
@@ -560,9 +1417,15 @@ function buildCheatSheet(){
         card.appendChild(photo);
         card.appendChild(details);
         grid.appendChild(card);
+
+        }
+        row.appendChild(grid);
       }
-      section.appendChild(grid);
+      body.appendChild(row);
     }
+    table.appendChild(body);
+    scroll.appendChild(table);
+    section.appendChild(scroll);
     content.appendChild(section);
   }
   cheatSheetBuilt = true;
@@ -620,7 +1483,7 @@ el("skipPhoto").addEventListener("click", () => {
 });
 
 el("startBtn").addEventListener("click", () => {
-  const includeIR = el("includeIR").checked;
+
   const selectedUnits = [];
   if(el("includeOff").checked) selectedUnits.push("off");
   if(el("includeDef").checked) selectedUnits.push("def");
@@ -641,10 +1504,12 @@ el("startBtn").addEventListener("click", () => {
   }
   enabledQuestions = formats.flatMap(format => questions.map(question => format + "-" + question));
 
-  const statusFiltered = includeIR ? ROSTER : ROSTER.filter(p => p.st === "active");
-  const base = statusFiltered.filter(p => selectedUnits.includes(p.unit) && depths.includes(p.depth));
+  const base = ROSTER.flatMap(p => {
+    const role = p.roles.find(role => selectedUnits.includes(role.unit) && depths.includes(role.depth));
+    return role ? [{...p,...role}] : [];
+  });
   if(!base.length){
-    el("setupErr").textContent = "No players match these filters. Try another depth or include reserve / injured players.";
+    el("setupErr").textContent = "No players match these filters. Try another unit or depth.";
     return;
   }
   pool = base.map(p => ({...p, mastery:0, pending:shuffle(enabledQuestions)}));
@@ -709,7 +1574,7 @@ function nextQuestion(){
   if(!qtype.includes("photo-") && !qtype.endsWith("name") && current.note){
     el("roleNote").textContent = current.note;
   } else if(!qtype.includes("photo-") && !qtype.endsWith("name") && current.also && current.also.length){
-    el("roleNote").textContent = "Also on ESPN depth chart: " + current.also.join(" · ");
+    el("roleNote").textContent = "Also on official depth chart: " + current.also.join(" · ");
   }
   currentQuestionType = qtype;
   renderAvatar(current, qtype.includes("photo-") || !qtype.endsWith("name"));
@@ -758,16 +1623,16 @@ function questionSubject(){ return currentQuestionType.split("-").pop(); }
 function answerFor(p, subject){ return subject === "number" ? p.num : subject === "name" ? p.n : p.pos; }
 function normalizeAnswer(value){ return String(value).toLowerCase().replace(/[^a-z0-9]/g, ""); }
 const positionAliases = {
-  "Quarterback":["QB"], "Running Back":["RB"], "Tight End":["TE"],
-  "Wide Receiver 1":["WR1"], "Wide Receiver 2":["WR2"], "Wide Receiver 3":["WR3"],
-  "Left Tackle":["LT"], "Right Tackle":["RT"], "Left Guard":["LG"], "Right Guard":["RG"], "Center":["C"],
-  "Left Defensive End":["LDE"], "Right Defensive End":["RDE"],
-  "Left Defensive Tackle":["LDT"], "Right Defensive Tackle":["RDT"],
-  "Weakside Linebacker":["WLB"], "Middle Linebacker":["MLB"], "Strongside Linebacker":["SLB"],
-  "Left Cornerback":["LCB"], "Right Cornerback":["RCB"], "Nickel Back":["NB","Nickelback"],
-  "Free Safety":["FS"], "Strong Safety":["SS"], "Place Kicker":["K","PK","Kicker","Placekicker"],
-  "Punter":["P"], "Long Snapper":["LS"]
+  "Quarterback":["QB"],"Running Back":["RB"],"Wide Receiver":["WR"],"Tight End":["TE"],
+  "Left Tackle":["LT"],"Right Tackle":["RT"],"Left Guard":["LG"],"Right Guard":["RG"],"Center":["C"],
+  "Defensive Line":["DL","Defensive Lineman"],"Linebacker":["LB"],"Safety":["S"],
+  "Defensive Back":["DB"],"Cornerback":["CB"],"Kicker":["K","PK","Place Kicker"],
+  "Punter":["P"],"Kickoff Specialist":["KO","Kickoffs"],"Holder":["H"],"Long Snapper":["LS"],
+  "Kick Returner":["KR"],"Punt Returner":["PR"]
 };
+function validPositions(p){
+  return [...new Set(p.roles.filter(role => role.unit === p.unit).map(role => role.pos))];
+}
 function isTypedCorrect(value, p, subject){
   if(subject === "number") return /^#?\d+$/.test(value) && Number(value.replace("#","")) === p.num;
   const normalized = normalizeAnswer(value);
@@ -775,11 +1640,12 @@ function isTypedCorrect(value, p, subject){
     const withoutSuffix = name => name.replace(/\s+(II|III|IV|Jr\.?|Sr\.?)$/i, "");
     return normalized === normalizeAnswer(p.n) || normalized === normalizeAnswer(withoutSuffix(p.n));
   }
-  return [p.pos, depthRole(p), ...(positionAliases[p.pos] || [])].some(alias => normalized === normalizeAnswer(alias));
+  return p.roles.filter(role => role.unit === p.unit).some(role => [role.pos, depthRole(role), ...(positionAliases[role.pos] || [])].some(alias => normalized === normalizeAnswer(alias)));
 }
 function renderQuestion(p, qtype){
   const subject = qtype.split("-").pop();
   const photoOnly = qtype.includes("photo-");
+  const unitName = {off:"offense",def:"defense",st:"special teams"}[p.unit];
   const typed = qtype.startsWith("type-");
   el("photoActions").classList.add("hidden");
   el("mcOptions").innerHTML = "";
@@ -788,15 +1654,15 @@ function renderQuestion(p, qtype){
   el("mcOptions").classList.toggle("position-options", subject === "position");
   el("qtag").textContent = (photoOnly ? "Photo ID · " : "") + subject + (typed ? " · Type it in" : " · Multiple choice");
   if(photoOnly){
-    el("promptText").textContent = subject === "name" ? "Who is this player?" : subject === "number" ? "What jersey number does this player wear?" : "What exact position does this player play?";
+    el("promptText").textContent = subject === "name" ? "Who is this player?" : subject === "number" ? "What jersey number does this player wear?" : "Name an official " + unitName + " position for this player.";
     el("roleNote").textContent = "";
   } else if(subject === "name"){
     el("promptText").textContent = "Who wears #" + p.num + " and is " + depthRole(p) + "?";
   } else if(subject === "number"){
     el("promptText").textContent = "What number does " + p.n + " (" + depthRole(p) + ") wear?";
   } else {
-    el("promptText").textContent = "What exact position does #" + p.num + " " + p.n + " play?";
-    el("roleNote").textContent = "Give the exact position; depth is not required.";
+    el("promptText").textContent = "Name an official " + unitName + " position for #" + p.num + " " + p.n + ".";
+    el("roleNote").textContent = "Use the team's position labels; depth is not required.";
   }
   if(typed){
     const input = el("typeInput");
@@ -811,12 +1677,13 @@ function renderQuestion(p, qtype){
     return;
   }
   const answer = answerFor(p, subject);
-  let others = [...new Set(pool.map(player => answerFor(player, subject)))].filter(value => value !== answer);
+  const validAnswers = subject === "position" ? validPositions(p) : [answer];
+  let others = [...new Set(pool.map(player => answerFor(player, subject)))].filter(value => !validAnswers.includes(value));
   // Use roster-only distractors if a narrow pool has too few distinct answers.
   // The question's target player still always comes from the selected pool.
-  if(others.length < 3) others = [...new Set([...others, ...ROSTER.map(player => answerFor(player, subject))])].filter(value => value !== answer);
+  if(others.length < 3) others = [...new Set([...others, ...ROSTER.map(player => answerFor(player, subject))])].filter(value => !validAnswers.includes(value));
   const options = shuffle([answer, ...shuffle(others).slice(0,3)]);
-  buildMC(options, value => value === answer, value => subject === "number" ? "#" + value : value);
+  buildMC(options, value => validAnswers.includes(value), value => subject === "number" ? "#" + value : value);
 }
 
 function buildMC(options, isCorrect, label){
