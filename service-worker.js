@@ -1,4 +1,4 @@
-const CACHE_NAME = "bears-learn-v1";
+const CACHE_NAME = "bears-learn-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
