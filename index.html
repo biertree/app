@@ -578,7 +578,7 @@ function startRound(){
   }
   const sorted = shuffle(remaining).sort((a,b) => a.mastery - b.mastery);
   roundQueue = sorted.slice(0, Math.min(7, sorted.length));
-  roundSize = roundQueue.length;
+  roundSize = roundQueue.reduce((sum, player) => sum + player.pending.length, 0);
   roundCorrect = 0;
   roundMissed = [];
   el("roundLabel").textContent = "Round " + roundNum;
@@ -794,11 +794,19 @@ function advance(){
 }
 
 function endRound(){
+  const remaining = pool.filter(p => p.pending.length).length;
+  updateProgress();
+  if(remaining === 0){
+    finishAll();
+    return;
+  }
   el("quizScreen").classList.add("hidden");
   el("roundEndScreen").classList.remove("hidden");
-  el("roundScore").textContent = roundCorrect + "/" + (roundCorrect + roundMissed.length);
-  const remaining = pool.filter(p => p.pending.length).length;
-  el("roundSummary").textContent = remaining + " player" + (remaining===1?"":"s") + " still to master.";
+  el("roundScore").textContent = roundCorrect + "/" + roundSize;
+  const attempts = roundCorrect + roundMissed.length;
+  el("roundSummary").textContent = "Questions completed. " +
+    roundCorrect + " correct answers in " + attempts + " attempts (" + roundMissed.length + " incorrect). " +
+    remaining + " player" + (remaining===1?"":"s") + " still to master.";
   roundNum += 1;
 }
 
